@@ -1,0 +1,61 @@
+# ─── Node / Expo ───────────────────────────────────────────────
+node_modules/
+.expo/
+.expo-shared/
+.expo/web/cache/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+*.pid
+*.pid.lock
+
+# Metro / Babel / Tailwind caches
+.cache/
+dist/
+web-build/
+
+# ─── Env / credenciales (mantén solo .env.example en repo) ────
+.env
+.env.*
+!.env.example
+
+# ─── iOS (si prebuild o eject) ────────────────────────────────
+ios/build/
+ios/DerivedData/
+ios/Pods/
+ios/*.xcodeproj/project.xcworkspace/
+ios/*.xcworkspace/xcuserdata/
+ios/*.xcodeproj/xcuserdata/
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+
+# ─── Android (si prebuild o eject) ────────────────────────────
+android/.gradle/
+android/.cxx/
+android/build/
+android/app/build/
+android/local.properties
+android/captures/
+
+# ─── IDE / SO ─────────────────────────────────────────────────
+.vscode/
+.idea/
+*.iml
+.DS_Store
+Thumbs.db
+
+# ─── Claves y certificados (EAS/firmas) ───────────────────────
+*.jks
+*.keystore
+*.p8
+*.p12
+*.key
+*.pem
+*.mobileprovision
+
+# ─── Tests / coverage (si usas Jest) ──────────────────────────
+coverage/
