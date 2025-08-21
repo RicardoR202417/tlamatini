@@ -12,3 +12,5 @@ export const sequelize = new Sequelize(env.db.name, env.db.user, env.db.pass, {
 export async function dbPing() {
   await sequelize.authenticate();
 }
+
+export default sequelize;

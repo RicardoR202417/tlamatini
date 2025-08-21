@@ -1,8 +1,11 @@
 ﻿import { createApp } from './app.js';
 import { env } from './config/env.js';
 import { sequelize } from './config/database.js';
+import donacionesRoutes from './routes/donaciones.routes.js';
 
 const app = createApp();
+
+app.use('/api', donacionesRoutes);
 
 async function bootstrap() {
   try {
