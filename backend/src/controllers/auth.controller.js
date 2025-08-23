@@ -3,6 +3,8 @@ import jwt from 'jsonwebtoken';
 import { body, validationResult } from 'express-validator';
 import { OAuth2Client } from 'google-auth-library';
 import { Usuario } from '../models/Usuario.js';
+import crypto from 'crypto';
+import { RefreshToken } from '../models/RefreshToken.js';
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -61,10 +63,12 @@ export async function register(req, res) {
       validado: true    // puedes dejarlo en true o manejar validación por correo más adelante
     });
 
-    const token = signToken(user);
-    return res.status(201).json({
-      message: 'Registro exitoso',
-      token,
+   const token = signToken(user);
+const refresh_token = await issueRefreshToken(user.id_usuario);
+return res.status(201).json({
+  message: 'Registro exitoso',
+  token,
+  refresh_token,
       user: {
         id_usuario: user.id_usuario,
         nombres: user.nombres,
@@ -95,10 +99,11 @@ export async function login(req, res) {
     if (!ok) return res.status(401).json({ message: 'Credenciales inválidas' });
 
     const token = signToken(user);
-
+const refresh_token = await issueRefreshToken(user.id_usuario);
     return res.json({
       message: 'Login exitoso',
-      token,
+       token,
+  refresh_token,
       user: {
         id_usuario: user.id_usuario,
         nombres: user.nombres,
@@ -178,10 +183,11 @@ export async function googleSignIn(req, res) {
     }
 
     const token = signToken(user);
-
+const refresh_token = await issueRefreshToken(user.id_usuario);
     return res.json({
       message: 'Login con Google exitoso',
       token,
+       refresh_token,
       user: {
         id_usuario: user.id_usuario,
         nombres: user.nombres,
@@ -199,4 +205,78 @@ export async function googleSignIn(req, res) {
 export async function me(req, res) {
   // req.user viene del JWT
   return res.json({ user: req.user });
+}
+
+
+/* Emite refresh con tus nombres de columnas */
+async function issueRefreshToken(id_usuario, ttlDays = 30) {
+  const token = crypto.randomBytes(48).toString('hex');
+  const expiracion = new Date(Date.now() + ttlDays*24*60*60*1000);
+  await RefreshToken.create({ id_usuario, token, expiracion });
+  return token;
+}
+
+/* Rotación: marca revocado=1 y crea uno nuevo */
+async function rotateRefreshToken(oldToken) {
+  const rt = await RefreshToken.findOne({ where: { token: oldToken } });
+  if (!rt) return null;
+  if (rt.revocado) return null;
+  if (new Date(rt.expiracion) < new Date()) return null;
+
+  rt.revocado = true;
+  await rt.save();
+
+  return issueRefreshToken(rt.id_usuario);
+}
+
+/* Revocar explícitamente */
+async function revokeRefreshToken(tokenStr) {
+  const rt = await RefreshToken.findOne({ where: { token: tokenStr } });
+  if (!rt) return false;
+  rt.revocado = true;
+  await rt.save();
+  return true;
+}
+export async function refresh(req, res) {
+  try {
+    const { refresh_token } = req.body || {};
+    if (!refresh_token) return res.status(400).json({ message: 'refresh_token requerido' });
+
+    // rotación (revoca el antiguo y emite uno nuevo)
+    const newRefresh = await rotateRefreshToken(refresh_token);
+    if (!newRefresh) return res.status(401).json({ message: 'refresh_token inválido o expirado' });
+
+    // busca el usuario dueño del RT viejo para emitir nuevo access token
+    const old = await RefreshToken.findOne({ where: { token: refresh_token } })
+      .catch(() => null);
+    // Si no encuentras el viejo (pudo ser ya borrado), busca por el nuevo
+    const rt = old || await RefreshToken.findOne({ where: { token: newRefresh } });
+    if (!rt) return res.status(401).json({ message: 'refresh_token inválido' });
+
+    const userId = rt.id_usuario;
+    const user = await Usuario.findByPk(userId);
+    if (!user) return res.status(401).json({ message: 'usuario no encontrado' });
+
+    const access = signToken(user);
+    return res.json({
+      message: 'Refresh exitoso',
+      token: access,
+      refresh_token: newRefresh
+    });
+  } catch (e) {
+    return res.status(500).json({ message: 'Error en servidor', detail: e.message });
+  }
+}
+export async function logout(req, res) {
+  try {
+    const { refresh_token } = req.body || {};
+    if (!refresh_token) return res.status(400).json({ message: 'refresh_token requerido' });
+
+    const ok = await revokeRefreshToken(refresh_token);
+    if (!ok) return res.status(200).json({ message: 'Sesión finalizada' }); // idempotente
+
+    return res.json({ message: 'Logout exitoso' });
+  } catch (e) {
+    return res.status(500).json({ message: 'Error en servidor', detail: e.message });
+  }
 }
