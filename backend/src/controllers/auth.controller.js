@@ -5,6 +5,8 @@ import { OAuth2Client } from 'google-auth-library';
 import { Usuario } from '../models/Usuario.js';
 import crypto from 'crypto';
 import { RefreshToken } from '../models/RefreshToken.js';
+import { PasswordReset } from '../models/PasswordReset.js';
+import { sendResetPasswordEmail } from '../utils/mailer.js';
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -278,5 +280,103 @@ export async function logout(req, res) {
     return res.json({ message: 'Logout exitoso' });
   } catch (e) {
     return res.status(500).json({ message: 'Error en servidor', detail: e.message });
+  }
+}
+
+
+
+const sha256Hex = (s) => crypto.createHash('sha256').update(s).digest('hex');
+const minutesFromNow = (m) => { const d = new Date(); d.setMinutes(d.getMinutes() + m); return d; };
+
+/** POST /auth/forgot  Body: { correo } */
+export async function forgotPassword(req, res) {
+  try {
+    const { correo } = req.body || {};
+    if (!correo) return res.status(400).json({ mensaje: 'correo es requerido' });
+
+    // respuesta genérica (no exponemos si existe o no)
+    const ok = { mensaje: 'Si el correo existe, se enviará un enlace para restablecer la contraseña.' };
+
+    const user = await Usuario.findOne({ where: { correo } });
+    if (!user) return res.status(200).json(ok);
+
+    // invalidar tokens previos no usados de este usuario (higiene)
+    await PasswordReset.update(
+      { used: true, used_at: new Date() },
+      { where: { id_usuario: user.id_usuario, used: false } }
+    );
+
+    const rawToken = crypto.randomBytes(32).toString('hex'); // token que irá por correo
+    const tokenHash = sha256Hex(rawToken);                   // solo guardamos el hash
+    const ttl = parseInt(process.env.RESET_TOKEN_TTL_MIN || '15', 10);
+
+    await PasswordReset.create({
+      id_usuario: user.id_usuario,
+      token_hash: tokenHash,
+      expires_at: minutesFromNow(ttl)
+    });
+
+    const linkFront = `${process.env.FRONTEND_BASE_URL}/reset-password?token=${rawToken}&uid=${user.id_usuario}`;
+    const subject = 'Restablecer contraseña';
+    const html = `
+      <div style="font-family: Arial, sans-serif; line-height:1.5">
+        <h2>${process.env.APP_NAME || 'Aplicación'}</h2>
+        <p>Recibimos una solicitud para restablecer tu contraseña.</p>
+        <p><strong>Este enlace expira en ${ttl} minutos.</strong></p>
+        <p><a href="${linkFront}" target="_blank">Haz clic aquí para restablecer tu contraseña</a></p>
+        <p>Si no solicitaste este cambio, ignora este correo.</p>
+      </div>
+    `;
+    await sendResetPasswordEmail({ to: correo, subject, html });
+
+    return res.status(200).json(ok);
+  } catch (err) {
+    console.error('[forgotPassword] error', err);
+    return res.status(500).json({ mensaje: 'error interno' });
+  }
+}
+
+/** POST /auth/reset  Body: { token, uid, password } */
+export async function resetPassword(req, res) {
+  try {
+    const { token, uid, password } = req.body || {};
+    if (!token || !uid || !password) {
+      return res.status(400).json({ mensaje: 'token, uid y password son requeridos' });
+    }
+    if (String(password).length < 8) {
+      return res.status(400).json({ mensaje: 'la contraseña debe tener al menos 8 caracteres' });
+    }
+
+    const tokenHash = sha256Hex(token);
+
+    const pr = await PasswordReset.findOne({
+      where: {
+        id_usuario: uid,
+        token_hash: tokenHash,
+        used: false,
+        expires_at: { [Op.gt]: new Date() }
+      }
+    });
+    if (!pr) return res.status(400).json({ mensaje: 'token inválido o expirado' });
+
+    const user = await Usuario.findOne({ where: { id_usuario: uid } });
+    if (!user) return res.status(400).json({ mensaje: 'usuario no encontrado' });
+
+    user.password = await bcrypt.hash(password, 10);
+    await user.save();
+
+    pr.used = true;
+    pr.used_at = new Date();
+    await pr.save();
+
+    // (opcional pero recomendado) invalidar refresh tokens activos
+    if (RefreshToken) {
+      await RefreshToken.destroy({ where: { id_usuario: uid } });
+    }
+
+    return res.status(200).json({ mensaje: 'contraseña actualizada correctamente' });
+  } catch (err) {
+    console.error('[resetPassword] error', err);
+    return res.status(500).json({ mensaje: 'error interno' });
   }
 }
