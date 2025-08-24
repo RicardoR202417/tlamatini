@@ -64,7 +64,7 @@ export async function register(req, res) {
     });
 
    const token = signToken(user);
-const refresh_token = await issueRefreshToken(user.id_usuario);
+const refresh_token = await issueRefreshToken(user.id_usuario); 
 return res.status(201).json({
   message: 'Registro exitoso',
   token,

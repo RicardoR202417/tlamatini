@@ -5,11 +5,11 @@ import cors from 'cors';
 import morgan from 'morgan';
 import helmet from 'helmet';
 
-// BD: default export y helpers nombrados
+// BD: default export y helpers nombrados - RUTA CORREGIDA
 import sequelize, { testConnection, dbHealthCheck } from './src/config/database.js';
 
-// Rutas
-import authRoutes from './src/routes/auth.routes.js';
+// Rutas organizadas
+import routes from './src/routes/index.js';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -38,13 +38,9 @@ if (process.env.NODE_ENV !== 'production') {
 
 /* ===== Rutas ===== */
 app.get('/', (_req, res) => res.send('Servidor funcionando 🚀'));
-app.get('/health', async (_req, res) => {
-  const db = await dbHealthCheck();
-  res.status(db.healthy ? 200 : 503).json({ ok: db.healthy, db, time: new Date().toISOString() });
-});
 
-// Base /api → auth: /api/register, /api/login, /api/google, /api/me
-app.use('/api', authRoutes);
+// Todas las rutas organizadas bajo /api
+app.use('/api', routes);
 
 // 404
 app.use((req, res) => res.status(404).json({ message: 'Ruta no encontrada' }));

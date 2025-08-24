@@ -1,5 +1,5 @@
 ﻿export { Usuario } from './Usuario.js';
-import sequelize, { testConnection, dbHealthCheck } from '../../config/database.js';
+import sequelize, { testConnection, dbHealthCheck } from '../config/database.js';
 
 class Database {
   constructor() {
