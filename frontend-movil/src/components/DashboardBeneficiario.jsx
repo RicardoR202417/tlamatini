@@ -88,7 +88,7 @@ const DashboardBeneficiario = ({ navigation }) => {
     },
     {
       id: 'donaciones',
-      icon: '�',
+      icon: '🎁',
       title: 'Apóyanos / Donaciones',
       description: 'Monetarias, en Especie y Deducibles',
       subtitle: 'Ayúdanos a ayudar a más personas',
