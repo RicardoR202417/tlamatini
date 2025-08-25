@@ -6,6 +6,12 @@ import LoginScreen from './src/screens/LoginScreen';
 import RegisterScreen from './src/screens/RegisterScreen';
 import BeneficiarioHomeScreen from './src/screens/BeneficiarioHomeScreen';
 import ProfesionalHomeScreen from './src/screens/ProfesionalHomeScreen';
+import ServiciosProfesionalesScreen from './src/screens/ServiciosProfesionalesScreen';
+import ActividadesSocialesScreen from './src/screens/ActividadesSocialesScreen';
+import DonacionesScreen from './src/screens/DonacionesScreen';
+import MiPerfilScreen from './src/screens/MiPerfilScreen';
+import MisCitasScreen from './src/screens/MisCitasScreen';
+import AvisosScreen from './src/screens/AvisosScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -48,6 +54,36 @@ export default function App() {
           name="ProfesionalHome" 
           component={ProfesionalHomeScreen}
           options={{ title: 'Inicio - Profesional', headerShown: false }}
+        />
+        <Stack.Screen 
+          name="ServiciosProfesionales" 
+          component={ServiciosProfesionalesScreen}
+          options={{ title: 'Servicios Profesionales', headerShown: false }}
+        />
+        <Stack.Screen 
+          name="ActividadesSociales" 
+          component={ActividadesSocialesScreen}
+          options={{ title: 'Actividades y Programas', headerShown: false }}
+        />
+        <Stack.Screen 
+          name="Donaciones" 
+          component={DonacionesScreen}
+          options={{ title: 'Donaciones', headerShown: false }}
+        />
+        <Stack.Screen 
+          name="MiPerfil" 
+          component={MiPerfilScreen}
+          options={{ title: 'Mi Perfil', headerShown: false }}
+        />
+        <Stack.Screen 
+          name="MisCitas" 
+          component={MisCitasScreen}
+          options={{ title: 'Mis Citas', headerShown: false }}
+        />
+        <Stack.Screen 
+          name="Avisos" 
+          component={AvisosScreen}
+          options={{ title: 'Avisos', headerShown: false }}
         />
       </Stack.Navigator>
     </NavigationContainer>

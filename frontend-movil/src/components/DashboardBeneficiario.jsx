@@ -100,60 +100,15 @@ const DashboardBeneficiario = ({ navigation }) => {
   const handleSeccionPress = (seccion) => {
     switch (seccion.id) {
       case 'servicios-profesionales':
-        // TODO: Navegar a pantalla de servicios profesionales
-        Alert.alert(
-          'Servicios Profesionales',
-          'Navegando a la pantalla de servicios profesionales...',
-          [
-            { text: 'Cancelar', style: 'cancel' },
-            { 
-              text: 'Continuar', 
-              onPress: () => {
-                console.log('Navegando a servicios profesionales');
-                // navigation.navigate('ServiciosProfesionales');
-                Alert.alert('Próximamente', 'Pantalla de Servicios Profesionales será implementada');
-              }
-            }
-          ]
-        );
+        navigation.navigate('ServiciosProfesionales');
         break;
       
       case 'actividades-sociales':
-        // TODO: Navegar a pantalla de actividades sociales
-        Alert.alert(
-          'Actividades y Programas',
-          'Navegando a la pantalla de actividades y programas sociales...',
-          [
-            { text: 'Cancelar', style: 'cancel' },
-            { 
-              text: 'Continuar', 
-              onPress: () => {
-                console.log('Navegando a actividades sociales');
-                // navigation.navigate('ActividadesSociales');
-                Alert.alert('Próximamente', 'Pantalla de Actividades y Programas será implementada');
-              }
-            }
-          ]
-        );
+        navigation.navigate('ActividadesSociales');
         break;
       
       case 'donaciones':
-        // TODO: Navegar a pantalla de donaciones
-        Alert.alert(
-          'Apóyanos / Donaciones',
-          'Navegando a la pantalla de donaciones...',
-          [
-            { text: 'Cancelar', style: 'cancel' },
-            { 
-              text: 'Continuar', 
-              onPress: () => {
-                console.log('Navegando a donaciones');
-                // navigation.navigate('Donaciones');
-                Alert.alert('Próximamente', 'Pantalla de Donaciones será implementada');
-              }
-            }
-          ]
-        );
+        navigation.navigate('Donaciones');
         break;
       
       default:
@@ -189,17 +144,17 @@ const DashboardBeneficiario = ({ navigation }) => {
         <ContentContainer>
           {/* Acciones rápidas */}
           <QuickActionsContainer>
-            <QuickActionButton onPress={() => Alert.alert('Próximamente', 'Mi perfil será implementado')}>
+            <QuickActionButton onPress={() => navigation.navigate('MiPerfil')}>
               <QuickActionIcon>👤</QuickActionIcon>
               <QuickActionText>Mi Perfil</QuickActionText>
             </QuickActionButton>
             
-            <QuickActionButton onPress={() => Alert.alert('Próximamente', 'Historial será implementado')}>
+            <QuickActionButton onPress={() => navigation.navigate('MisCitas')}>
               <QuickActionIcon>📋</QuickActionIcon>
               <QuickActionText>Mis Citas</QuickActionText>
             </QuickActionButton>
             
-            <QuickActionButton onPress={() => Alert.alert('Próximamente', 'Notificaciones será implementado')}>
+            <QuickActionButton onPress={() => navigation.navigate('Avisos')}>
               <QuickActionIcon>🔔</QuickActionIcon>
               <QuickActionText>Avisos</QuickActionText>
             </QuickActionButton>
