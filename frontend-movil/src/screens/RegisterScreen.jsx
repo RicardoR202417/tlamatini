@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { StatusBar, Alert, ActivityIndicator } from 'react-native';
+import { StatusBar, Alert, ActivityIndicator, Text } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import ApiService from '../api/ApiService';
 import StorageService from '../services/StorageService';
+import SuccessModal from '../components/SuccessModal';
+import ErrorModal from '../components/ErrorModal';
 import {
   FormContainer,
   ContentContainer,
@@ -37,6 +39,10 @@ const RegisterScreen = ({ navigation }) => {
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [userType, setUserType] = useState('');
 
   // Validación de campos
   const validateForm = () => {
@@ -93,14 +99,15 @@ const RegisterScreen = ({ navigation }) => {
       await StorageService.saveUserData(response.user);
 
       setLoading(false);
-      Alert.alert('Éxito', 'Registro completado exitosamente', [
-        { 
-          text: 'OK', 
-          onPress: () => {
-            navigation.navigate('Login');
-          }
-        }
-      ]);
+      
+      // Navegar según tipo de usuario registrado
+      const { tipo_usuario } = response.user;
+      console.log('Usuario registrado:', response.user);
+      console.log('Tipo de usuario:', tipo_usuario);
+      
+      // Mostrar modal de éxito personalizado
+      setUserType(tipo_usuario);
+      setShowSuccessModal(true);
 
     } catch (error) {
       setLoading(false);
@@ -115,9 +122,30 @@ const RegisterScreen = ({ navigation }) => {
         });
         setErrors(backendErrors);
       } else {
-        Alert.alert('Error', error.message || 'Error al registrar usuario');
+        // Mostrar modal de error personalizado
+        setErrorMessage(error.message || 'Error al registrar usuario');
+        setShowErrorModal(true);
       }
     }
+  };
+
+  // Manejar éxito del modal
+  const handleSuccessModalPress = () => {
+    setShowSuccessModal(false);
+    if (userType === 'beneficiario') {
+      navigation.navigate('BeneficiarioHome');
+    } else if (userType === 'profesional') {
+      navigation.navigate('ProfesionalHome');
+    } else {
+      // Fallback al login si hay algún problema
+      navigation.navigate('Login');
+    }
+  };
+
+  // Manejar cierre del modal de error
+  const handleErrorModalPress = () => {
+    setShowErrorModal(false);
+    setErrorMessage('');
   };
 
   // Manejar registro con Google
@@ -155,7 +183,7 @@ const RegisterScreen = ({ navigation }) => {
       <ContentContainer>
         <HeaderContainer>
           <SmallLogo
-            source={{ uri: 'https://via.placeholder.com/80x80/FFFFFF/3EAB37?text=LOGO' }}
+            source={require('../../assets/logo_blanco.jpg')}
             resizeMode="contain"
           />
           <FormTitle>Crear Cuenta</FormTitle>
@@ -218,13 +246,37 @@ const RegisterScreen = ({ navigation }) => {
 
         <InputContainer>
           <InputLabel>Tipo de Usuario</InputLabel>
+          <Text style={{ 
+            fontSize: 14, 
+            color: '#666', 
+            marginBottom: 10, 
+            lineHeight: 20 
+          }}>
+            Selecciona tu rol en la plataforma:
+          </Text>
+          <Text style={{ 
+            fontSize: 12, 
+            color: '#888', 
+            marginBottom: 15, 
+            lineHeight: 18 
+          }}>
+            • <Text style={{ fontWeight: 'bold', color: '#3EAB37' }}>Beneficiario:</Text> Participa en programas de la asociación y agenda citas con profesionales.{'\n'}
+            • <Text style={{ fontWeight: 'bold', color: '#3EAB37' }}>Profesional:</Text> Ofrece servicios especializados y agenda citas con beneficiarios.
+          </Text>
           <PickerContainer>
             <Picker
               selectedValue={formData.tipo_usuario}
               onValueChange={(value) => updateField('tipo_usuario', value)}
+              style={{ color: '#333' }}
             >
-              <Picker.Item label="Beneficiario" value="beneficiario" />
-              <Picker.Item label="Profesional" value="profesional" />
+              <Picker.Item 
+                label="👥 Beneficiario" 
+                value="beneficiario" 
+              />
+              <Picker.Item 
+                label="💼 Profesional" 
+                value="profesional" 
+              />
             </Picker>
           </PickerContainer>
           {errors.tipo_usuario && <ErrorMessage>{errors.tipo_usuario}</ErrorMessage>}
@@ -247,6 +299,22 @@ const RegisterScreen = ({ navigation }) => {
           </LinkText>
         </LinkContainer>
       </ContentContainer>
+
+      <SuccessModal
+        visible={showSuccessModal}
+        title="¡Cuenta creada!"
+        message={`Te has registrado exitosamente como ${userType === 'beneficiario' ? 'Beneficiario' : 'Profesional'}. ¡Bienvenido a TLAMATINI!`}
+        buttonText="Comenzar"
+        onPress={handleSuccessModalPress}
+      />
+
+      <ErrorModal
+        visible={showErrorModal}
+        title="Error en el registro"
+        message={errorMessage}
+        buttonText="Intentar de nuevo"
+        onPress={handleErrorModalPress}
+      />
     </FormContainer>
   );
 };

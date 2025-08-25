@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { StatusBar, Alert, ActivityIndicator } from 'react-native';
 import ApiService from '../api/ApiService';
 import StorageService from '../services/StorageService';
+import SuccessModal from '../components/SuccessModal';
+import ErrorModal from '../components/ErrorModal';
 import {
   FormContainer,
   ContentContainer,
@@ -31,6 +33,10 @@ const LoginScreen = ({ navigation }) => {
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [userType, setUserType] = useState('');
 
   // Validación de campos
   const validateForm = () => {
@@ -68,17 +74,15 @@ const LoginScreen = ({ navigation }) => {
       await StorageService.saveUserData(response.user);
 
       setLoading(false);
-      Alert.alert('Éxito', 'Inicio de sesión exitoso', [
-        { 
-          text: 'OK', 
-          onPress: () => {
-            // TODO: Navegar según tipo de usuario
-            console.log('Usuario autenticado:', response.user);
-            console.log('Tipo de usuario:', response.user.tipo_usuario);
-            // Aquí puedes implementar la navegación según el tipo de usuario
-          }
-        }
-      ]);
+      
+      // Navegar según tipo de usuario
+      const { tipo_usuario } = response.user;
+      console.log('Usuario autenticado:', response.user);
+      console.log('Tipo de usuario:', tipo_usuario);
+      
+      // Mostrar modal de éxito personalizado
+      setUserType(tipo_usuario);
+      setShowSuccessModal(true);
 
     } catch (error) {
       setLoading(false);
@@ -93,9 +97,30 @@ const LoginScreen = ({ navigation }) => {
         });
         setErrors(backendErrors);
       } else {
-        Alert.alert('Error', error.message || 'Error al iniciar sesión');
+        // Mostrar modal de error personalizado
+        setErrorMessage(error.message || 'Error al iniciar sesión');
+        setShowErrorModal(true);
       }
     }
+  };
+
+  // Manejar éxito del modal
+  const handleSuccessModalPress = () => {
+    setShowSuccessModal(false);
+    if (userType === 'beneficiario') {
+      navigation.navigate('BeneficiarioHome');
+    } else if (userType === 'profesional') {
+      navigation.navigate('ProfesionalHome');
+    } else {
+      console.warn('Tipo de usuario no reconocido:', userType);
+      Alert.alert('Error', 'Tipo de usuario no válido');
+    }
+  };
+
+  // Manejar cierre del modal de error
+  const handleErrorModalPress = () => {
+    setShowErrorModal(false);
+    setErrorMessage('');
   };
 
   // Manejar login con Google
@@ -133,7 +158,7 @@ const LoginScreen = ({ navigation }) => {
       <ContentContainer>
         <HeaderContainer>
           <SmallLogo
-            source={{ uri: 'https://via.placeholder.com/80x80/FFFFFF/3EAB37?text=LOGO' }}
+            source={require('../../assets/logo_blanco.jpg')}
             resizeMode="contain"
           />
           <FormTitle>Iniciar Sesión</FormTitle>
@@ -163,6 +188,13 @@ const LoginScreen = ({ navigation }) => {
           {errors.contraseña && <ErrorMessage>{errors.contraseña}</ErrorMessage>}
         </InputContainer>
 
+        {/* Enlace de olvidé mi contraseña */}
+        <LinkContainer style={{ alignItems: 'flex-end', marginBottom: 20 }}>
+          <Link onPress={() => Alert.alert('Próximamente', 'Función de recuperación de contraseña será implementada')}>
+            ¿Se te olvidó tu contraseña?
+          </Link>
+        </LinkContainer>
+
         <ButtonContainer>
           <PrimaryButton onPress={handleLogin}>
             <PrimaryButtonText>Iniciar Sesión</PrimaryButtonText>
@@ -180,6 +212,22 @@ const LoginScreen = ({ navigation }) => {
           </LinkText>
         </LinkContainer>
       </ContentContainer>
+
+      <SuccessModal
+        visible={showSuccessModal}
+        title="¡Bienvenido!"
+        message={`Inicio de sesión exitoso como ${userType === 'beneficiario' ? 'Beneficiario' : 'Profesional'}`}
+        buttonText="Continuar"
+        onPress={handleSuccessModalPress}
+      />
+
+      <ErrorModal
+        visible={showErrorModal}
+        title="Error de autenticación"
+        message={errorMessage}
+        buttonText="Intentar de nuevo"
+        onPress={handleErrorModalPress}
+      />
     </FormContainer>
   );
 };

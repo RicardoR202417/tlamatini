@@ -25,7 +25,6 @@ export const HeaderContainer = styled.View`
 export const SmallLogo = styled.Image`
   width: 80px;
   height: 80px;
-  border-radius: 40px;
   margin-bottom: ${spacing.sm};
 `;
 

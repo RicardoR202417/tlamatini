@@ -27,9 +27,8 @@ const WelcomeScreen = ({ navigation }) => {
       <StatusBar style="light" />
       
       <LogoContainer>
-        {/* TODO: Reemplazar con el logo real de TLAMATINI */}
         <Logo
-          source={{ uri: 'https://via.placeholder.com/120x120/FFFFFF/3EAB37?text=LOGO' }}
+          source={require('../../assets/logo_verde.jpg')}
           resizeMode="contain"
         />
       </LogoContainer>

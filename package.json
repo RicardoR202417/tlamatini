@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "expo": "53.0.22",
+    "nodemailer": "^7.0.5",
     "react-native-worklets": "^0.4.1"
   }
 }

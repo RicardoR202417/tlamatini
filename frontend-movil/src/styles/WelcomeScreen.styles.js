@@ -19,7 +19,6 @@ export const LogoContainer = styled.View`
 export const Logo = styled.Image`
   width: 120px;
   height: 120px;
-  border-radius: 60px;
 `;
 
 // Texto de bienvenida
