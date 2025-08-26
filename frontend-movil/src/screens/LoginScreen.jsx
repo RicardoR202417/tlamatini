@@ -1,9 +1,15 @@
-import React, { useState } from 'react';
+// src/screens/LoginScreen.jsx
+import React, { useEffect, useState } from 'react';
 import { StatusBar, Alert, ActivityIndicator } from 'react-native';
+import * as WebBrowser from 'expo-web-browser';
+import * as Google from 'expo-auth-session/providers/google';
+import * as AuthSession from 'expo-auth-session';
+
 import ApiService from '../api/ApiService';
 import StorageService from '../services/StorageService';
 import SuccessModal from '../components/SuccessModal';
 import ErrorModal from '../components/ErrorModal';
+
 import {
   FormContainer,
   ContentContainer,
@@ -26,11 +32,15 @@ import {
   LoadingContainer
 } from '../styles/AuthForms.styles';
 
+WebBrowser.maybeCompleteAuthSession();
+
+const OWNER = 'thedemifiend';          // 👈 tu usuario de Expo (npx expo whoami)
+const SLUG  = 'frontend-movil';        // 👈 el slug de tu app (app.json/app.config.js)
+const EXPERIENCE = `@${OWNER}/${SLUG}`; // para el proxy
+const REDIRECT   = `https://auth.expo.io/${EXPERIENCE}`; // REGISTRADO EN GOOGLE
+
 const LoginScreen = ({ navigation }) => {
-  const [formData, setFormData] = useState({
-    correo: '',
-    contraseña: ''
-  });
+  const [formData, setFormData] = useState({ correo: '', contraseña: '' });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -38,110 +48,118 @@ const LoginScreen = ({ navigation }) => {
   const [errorMessage, setErrorMessage] = useState('');
   const [userType, setUserType] = useState('');
 
-  // Validación de campos
-  const validateForm = () => {
-    const newErrors = {};
+  // Web Client ID desde .env del frontend
+  const clientId = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID?.trim();
 
-    if (!formData.correo.trim()) {
-      newErrors.correo = 'El correo es requerido';
-    } else if (!/\S+@\S+\.\S+/.test(formData.correo)) {
-      newErrors.correo = 'El correo no es válido';
-    }
+  // Hook ÚNICO — OIDC implícito (id_token) con proxy fijo
+  const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
+    clientId,
+    redirectUri: REDIRECT, // 🔒 evita exp://
+    // (cuando hagas build nativo podrás pasar androidClientId/iosClientId)
+  });
 
-    if (!formData.contraseña.trim()) {
-      newErrors.contraseña = 'La contraseña es requerida';
-    } else if (formData.contraseña.length < 8) {
-      newErrors.contraseña = 'La contraseña debe tener al menos 8 caracteres';
-    }
+  // Depuración para confirmar qué estamos enviando
+  useEffect(() => {
+    Alert.alert(
+      'Auth Debug (init)',
+      `clientId: ${clientId ? clientId.slice(0, 10) + '…' : '⚠️ vacío'}\n` +
+      `redirectUri: ${REDIRECT}\n` +
+      `request?: ${!!request}`
+    );
+  }, [request]);
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  // Manejar login
-  const handleLogin = async () => {
-    if (!validateForm()) return;
-
-    setLoading(true);
-    try {
-      const response = await ApiService.login({
-        correo: formData.correo,
-        contraseña: formData.contraseña
-      });
-
-      // Guardar tokens y datos del usuario
-      await StorageService.saveTokens(response.token, response.refresh_token);
-      await StorageService.saveUserData(response.user);
-
-      setLoading(false);
-      
-      // Navegar según tipo de usuario
-      const { tipo_usuario } = response.user;
-      console.log('Usuario autenticado:', response.user);
-      console.log('Tipo de usuario:', tipo_usuario);
-      
-      // Mostrar modal de éxito personalizado
-      setUserType(tipo_usuario);
-      setShowSuccessModal(true);
-
-    } catch (error) {
-      setLoading(false);
-      
-      // Manejar errores de validación del backend
-      if (error.errors && error.errors.length > 0) {
-        const backendErrors = {};
-        error.errors.forEach(err => {
-          if (err.path) {
-            backendErrors[err.path] = err.msg;
-          }
-        });
-        setErrors(backendErrors);
-      } else {
-        // Mostrar modal de error personalizado
-        setErrorMessage(error.message || 'Error al iniciar sesión');
+  // Procesa la respuesta de Google
+  useEffect(() => {
+    (async () => {
+      if (response?.type === 'success' && response.params?.id_token) {
+        try {
+          setLoading(true);
+          const data = await ApiService.loginWithGoogle(response.params.id_token);
+          await StorageService.saveTokens(data.token, data.refresh_token);
+          await StorageService.saveUserData(data.user);
+          setUserType(data.user?.tipo_usuario);
+          setShowSuccessModal(true);
+        } catch (err) {
+          setErrorMessage(err?.message || 'No se pudo iniciar sesión con Google');
+          setShowErrorModal(true);
+        } finally {
+          setLoading(false);
+        }
+      } else if (response?.type === 'error') {
+        setErrorMessage(response?.error?.message || 'Error en autenticación con Google');
         setShowErrorModal(true);
       }
+    })();
+  }, [response]);
+
+  // Validación
+  const validateForm = () => {
+    const e = {};
+    if (!formData.correo.trim()) e.correo = 'El correo es requerido';
+    else if (!/\S+@\S+\.\S+/.test(formData.correo)) e.correo = 'El correo no es válido';
+    if (!formData.contraseña.trim()) e.contraseña = 'La contraseña es requerida';
+    else if (formData.contraseña.length < 8) e.contraseña = 'La contraseña debe tener al menos 8 caracteres';
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  };
+
+  // Login usuario/contraseña
+  const handleLogin = async () => {
+    if (!validateForm()) return;
+    setLoading(true);
+    try {
+      const r = await ApiService.login({ correo: formData.correo, contraseña: formData.contraseña });
+      await StorageService.saveTokens(r.token, r.refresh_token);
+      await StorageService.saveUserData(r.user);
+      setUserType(r.user?.tipo_usuario);
+      setShowSuccessModal(true);
+    } catch (err) {
+      if (err.errors?.length) {
+        const be = {};
+        err.errors.forEach(x => x.path && (be[x.path] = x.msg));
+        setErrors(be);
+      } else {
+        setErrorMessage(err.message || 'Error al iniciar sesión');
+        setShowErrorModal(true);
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Manejar éxito del modal
+  // Login con Google (único handler)
+  const handleGoogleLogin = async () => {
+    if (!clientId) {
+      Alert.alert('Configuración', 'Falta EXPO_PUBLIC_GOOGLE_CLIENT_ID en tu .env del frontend');
+      return;
+    }
+    if (!request) {
+      Alert.alert('Espera tantito', 'La solicitud de Google aún no está lista.');
+      return;
+    }
+
+    // 👇 Fuerza el proxy y amarra la experiencia para que regrese a TU app
+    const res = await promptAsync({
+      useProxy: true,
+      projectNameForProxy: EXPERIENCE, // 🔒 asegura que el proxy abra @owner/slug
+    });
+
+    // Depuración rápida del resultado
+    if (res?.type === 'error') {
+      Alert.alert('Google error', JSON.stringify(res, null, 2));
+    }
+  };
+
   const handleSuccessModalPress = () => {
     setShowSuccessModal(false);
-    if (userType === 'beneficiario') {
-      navigation.navigate('BeneficiarioHome');
-    } else if (userType === 'profesional') {
-      navigation.navigate('ProfesionalHome');
-    } else {
-      console.warn('Tipo de usuario no reconocido:', userType);
-      Alert.alert('Error', 'Tipo de usuario no válido');
-    }
+    if (userType === 'beneficiario') navigation.navigate('BeneficiarioHome');
+    else if (userType === 'profesional') navigation.navigate('ProfesionalHome');
+    else Alert.alert('Error', 'Tipo de usuario no válido');
   };
 
-  // Manejar cierre del modal de error
-  const handleErrorModalPress = () => {
-    setShowErrorModal(false);
-    setErrorMessage('');
-  };
-
-  // Manejar login con Google
-  const handleGoogleLogin = () => {
-    // TODO: Implementar Firebase Auth con Google
-    console.log('Login con Google');
-    Alert.alert('Próximamente', 'Login con Google será implementado');
-  };
-
-  // Navegar a registro
-  const navigateToRegister = () => {
-    navigation.navigate('Register');
-  };
-
-  // Actualizar campo
-  const updateField = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: null }));
-    }
-  };
+  const handleErrorModalPress = () => { setShowErrorModal(false); setErrorMessage(''); };
+  const navigateToRegister = () => navigation.navigate('Register');
+  const updateField = (f, v) => { setFormData(p => ({ ...p, [f]: v })); if (errors[f]) setErrors(p => ({ ...p, [f]: null })); };
 
   if (loading) {
     return (
@@ -154,13 +172,9 @@ const LoginScreen = ({ navigation }) => {
   return (
     <FormContainer contentContainerStyle={{ flexGrow: 1 }}>
       <StatusBar style="dark" />
-      
       <ContentContainer>
         <HeaderContainer>
-          <SmallLogo
-            source={require('../../assets/logo_blanco.jpg')}
-            resizeMode="contain"
-          />
+          <SmallLogo source={require('../../assets/logo_blanco.jpg')} resizeMode="contain" />
           <FormTitle>Iniciar Sesión</FormTitle>
           <FormSubtitle>Bienvenido de vuelta a TLAMATINI</FormSubtitle>
         </HeaderContainer>
@@ -170,7 +184,7 @@ const LoginScreen = ({ navigation }) => {
           <TextInput
             placeholder="correo@ejemplo.com"
             value={formData.correo}
-            onChangeText={(value) => updateField('correo', value)}
+            onChangeText={(v) => updateField('correo', v)}
             keyboardType="email-address"
             autoCapitalize="none"
           />
@@ -182,13 +196,12 @@ const LoginScreen = ({ navigation }) => {
           <TextInput
             placeholder="Tu contraseña"
             value={formData.contraseña}
-            onChangeText={(value) => updateField('contraseña', value)}
+            onChangeText={(v) => updateField('contraseña', v)}
             secureTextEntry
           />
           {errors.contraseña && <ErrorMessage>{errors.contraseña}</ErrorMessage>}
         </InputContainer>
 
-        {/* Enlace de olvidé mi contraseña */}
         <LinkContainer style={{ alignItems: 'flex-end', marginBottom: 20 }}>
           <Link onPress={() => Alert.alert('Próximamente', 'Función de recuperación de contraseña será implementada')}>
             ¿Se te olvidó tu contraseña?
@@ -199,17 +212,13 @@ const LoginScreen = ({ navigation }) => {
           <PrimaryButton onPress={handleLogin}>
             <PrimaryButtonText>Iniciar Sesión</PrimaryButtonText>
           </PrimaryButton>
-
           <GoogleButton onPress={handleGoogleLogin}>
             <GoogleButtonText>Continuar con Google</GoogleButtonText>
           </GoogleButton>
         </ButtonContainer>
 
         <LinkContainer>
-          <LinkText>
-            ¿No tienes cuenta?{' '}
-            <Link onPress={navigateToRegister}>Regístrate aquí</Link>
-          </LinkText>
+          <LinkText>¿No tienes cuenta? <Link onPress={navigateToRegister}>Regístrate aquí</Link></LinkText>
         </LinkContainer>
       </ContentContainer>
 
@@ -220,7 +229,6 @@ const LoginScreen = ({ navigation }) => {
         buttonText="Continuar"
         onPress={handleSuccessModalPress}
       />
-
       <ErrorModal
         visible={showErrorModal}
         title="Error de autenticación"

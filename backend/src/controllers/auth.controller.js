@@ -8,7 +8,6 @@ import { RefreshToken } from '../models/RefreshToken.js';
 import { PasswordReset } from '../models/PasswordReset.js';
 import { sendResetPasswordEmail } from '../utils/mailer.js';
 
-const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 function signToken(user) {
   const payload = {

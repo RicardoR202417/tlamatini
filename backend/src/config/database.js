@@ -1,32 +1,48 @@
 ﻿import { Sequelize } from 'sequelize';
 import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+import path from 'path';
 
-dotenv.config();
+// Carga .env desde la raíz del backend sin depender del cwd
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
-// Valida variables obligatorias
-const requiredEnvVars = ['DB_NAME', 'DB_USER', 'DB_HOST'];
-const missingEnvVars = requiredEnvVars.filter((k) => !process.env[k]);
-if (missingEnvVars.length > 0) {
-  throw new Error(`Missing required environment variables: ${missingEnvVars.join(', ')}`);
-}
-
-// Helpers numéricos seguros
+// Helpers
+const mask = (v) => (v ? '*'.repeat(Math.max(2, String(v).length - 2)) : '(empty)');
 const toInt = (v, def) => {
   const n = parseInt(String(v), 10);
   return Number.isFinite(n) ? n : def;
 };
 
-// dialectOptions condicional (no pongas ssl: false)
+// Validación estricta (incluye PASS)
+const requiredEnv = ['DB_NAME', 'DB_USER', 'DB_HOST', 'DB_PORT', 'DB_PASS'];
+const missing = requiredEnv.filter((k) => !process.env[k] || String(process.env[k]).trim() === '');
+if (missing.length) {
+  throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
+}
+
+// SSL opcional
 const dialectOptions = { connectTimeout: 60000 };
 if (process.env.DB_SSL === 'true') {
   dialectOptions.ssl = { require: true, rejectUnauthorized: false };
 }
 
-// Instancia de Sequelize
+// Log útil (enmascarado) para confirmar que SÍ se leyó DB_PASS
+console.log('[DB] Config ->', {
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT,
+  name: process.env.DB_NAME,
+  user: process.env.DB_USER,
+  pass: mask(process.env.DB_PASS),
+  passLen: (process.env.DB_PASS || '').length,
+  dialect: process.env.DB_DIALECT || 'mysql',
+});
+
 const sequelize = new Sequelize(
   process.env.DB_NAME,
   process.env.DB_USER,
-  process.env.DB_PASSWORD || '',
+  process.env.DB_PASS, // sin fallback a vacío
   {
     host: process.env.DB_HOST,
     port: toInt(process.env.DB_PORT, 3306),
@@ -53,14 +69,13 @@ const sequelize = new Sequelize(
   }
 );
 
-// Test de conexión
 export async function testConnection() {
   try {
     await sequelize.authenticate();
-    console.log('✅ Database connection established successfully.');
+    console.log('✅ DB: conexión OK');
     return true;
   } catch (error) {
-    console.error('❌ Unable to connect to the database:', {
+    console.error('❌ DB: fallo de conexión:', {
       name: error?.name,
       message: error?.message,
       code: error?.original?.code,
@@ -74,7 +89,6 @@ export async function testConnection() {
   }
 }
 
-// Health check
 export async function dbHealthCheck() {
   try {
     const [result] = await sequelize.query('select 1 as health_check');

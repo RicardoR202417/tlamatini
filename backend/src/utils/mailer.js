@@ -1,12 +1,26 @@
 import nodemailer from 'nodemailer';
 
+function must(name){
+  const v = process.env[name];
+  if (!v) throw new Error(`[mailer] Falta variable ${name} en .env`);
+  return v;
+}
+function bool(v, def=false){ return String(v ?? def).toLowerCase() === 'true'; }
+
 export function createTransporter() {
-  const { SMTP_HOST, SMTP_PORT, SMTP_SECURE, SMTP_USER, SMTP_PASS } = process.env;
+  const host   = must('SMTP_HOST');              // ej: smtp.office365.com
+  const port   = Number(process.env.SMTP_PORT || 587);
+  const secure = bool(process.env.SMTP_SECURE, false);
+  const user   = must('SMTP_USER');
+  const pass   = must('SMTP_PASS');
+
+  console.log('[mailer] usando', { host, port, secure });
+
   return nodemailer.createTransport({
-    host: SMTP_HOST,
-    port: Number(SMTP_PORT || 587),
-    secure: String(SMTP_SECURE || 'false') === 'true',
-    auth: { user: SMTP_USER, pass: SMTP_PASS }
+    host,
+    port,
+    secure,          // Outlook: false (587, STARTTLS)
+    auth: { user, pass }
   });
 }
 
