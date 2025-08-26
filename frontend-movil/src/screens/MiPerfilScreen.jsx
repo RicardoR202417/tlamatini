@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { StatusBar, Alert } from 'react-native';
 import StorageService from '../services/StorageService';
+import ApiService from '../api/ApiService';
+import ConfirmModal from '../components/ConfirmModal';
+import ErrorModal from '../components/ErrorModal';
 import {
   Container,
   ScrollContainer,
@@ -50,25 +53,34 @@ const BackIcon = styled.Text`
 
 const ProfileCard = styled.View`
   background-color: white;
-  border-radius: 16px;
-  padding: 24px;
-  margin-bottom: 16px;
-  shadow-color: #000;
-  shadow-offset: 0px 4px;
-  shadow-opacity: 0.1;
-  shadow-radius: 6px;
-  elevation: 6;
+  border-radius: 20px;
+  padding: 28px;
+  margin-bottom: 20px;
+  shadow-color: #3EAB37;
+  shadow-offset: 0px 6px;
+  shadow-opacity: 0.15;
+  shadow-radius: 12px;
+  elevation: 8;
   align-items: center;
+  border-width: 1px;
+  border-color: rgba(62, 171, 55, 0.1);
 `;
 
 const ProfileAvatar = styled.View`
-  width: 80px;
-  height: 80px;
-  border-radius: 40px;
-  background-color: #6366f1;
+  width: 90px;
+  height: 90px;
+  border-radius: 45px;
+  background-color: #3EAB37;
   justify-content: center;
   align-items: center;
   margin-bottom: 16px;
+  shadow-color: #3EAB37;
+  shadow-offset: 0px 4px;
+  shadow-opacity: 0.3;
+  shadow-radius: 8px;
+  elevation: 8;
+  border-width: 3px;
+  border-color: rgba(255, 255, 255, 0.2);
 `;
 
 const AvatarText = styled.Text`
@@ -78,69 +90,117 @@ const AvatarText = styled.Text`
 `;
 
 const ProfileName = styled.Text`
-  font-size: 24px;
-  font-weight: bold;
-  color: #1f2937;
+  font-size: 26px;
+  font-weight: 800;
+  color: #2d3748;
   margin-bottom: 8px;
   text-align: center;
+  letter-spacing: 0.5px;
 `;
 
 const ProfileEmail = styled.Text`
   font-size: 16px;
-  color: #6b7280;
+  color: #3EAB37;
   margin-bottom: 16px;
   text-align: center;
+  font-weight: 500;
 `;
 
 const InfoRow = styled.View`
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 0;
+  padding: 18px 0;
   border-bottom-width: 1px;
-  border-bottom-color: #f3f4f6;
+  border-bottom-color: rgba(62, 171, 55, 0.1);
 `;
 
 const InfoLabel = styled.Text`
   font-size: 16px;
-  color: #6b7280;
-  font-weight: 500;
+  color: #4a5568;
+  font-weight: 600;
 `;
 
 const InfoValue = styled.Text`
   font-size: 16px;
-  color: #1f2937;
-  font-weight: 600;
+  color: #2d3748;
+  font-weight: 700;
+  max-width: 180px;
+  text-align: right;
 `;
 
 const MiPerfilScreen = ({ navigation }) => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     loadUserData();
-  }, []);
+    
+    // Listener para recargar datos cuando regrese de editar perfil
+    const unsubscribe = navigation.addListener('focus', () => {
+      loadUserData();
+    });
+
+    return unsubscribe;
+  }, [navigation]);
 
   const loadUserData = async () => {
     try {
-      const user = await StorageService.getUserData();
-      if (user) {
-        setUserData(user);
-      } else {
-        Alert.alert('Error', 'No se pudieron cargar los datos del usuario');
-        navigation.goBack();
+      setLoading(true);
+      
+      // Primero obtener el token
+      const token = await StorageService.getAccessToken();
+      if (!token) {
+        Alert.alert('Error', 'Sesión expirada');
+        navigation.navigate('Login');
+        return;
       }
+
+      console.log('=== MI PERFIL DEBUG ===');
+      console.log('Obteniendo datos del perfil desde el servidor...');
+      
+      // Obtener datos actualizados del servidor
+      const response = await ApiService.getProfile(token);
+      console.log('Respuesta del servidor:', response);
+      
+      if (response.user) {
+        // Actualizar el storage con los datos más recientes
+        await StorageService.saveUserData(response.user);
+        setUserData(response.user);
+        console.log('Datos del perfil actualizados:', response.user);
+      } else {
+        throw new Error('No se recibieron datos del usuario');
+      }
+      
+      console.log('=== END MI PERFIL DEBUG ===');
     } catch (error) {
       console.error('Error loading user data:', error);
-      Alert.alert('Error', 'Error al cargar el perfil');
+      
+      // Fallback: intentar cargar desde storage local
+      try {
+        const localUser = await StorageService.getUserData();
+        if (localUser) {
+          setUserData(localUser);
+          console.log('Datos cargados desde storage local como fallback');
+        } else {
+          Alert.alert('Error', 'No se pudieron cargar los datos del usuario');
+          navigation.goBack();
+        }
+      } catch (localError) {
+        console.error('Error con storage local:', localError);
+        Alert.alert('Error', 'Error al cargar el perfil');
+        navigation.goBack();
+      }
     } finally {
       setLoading(false);
     }
   };
 
   const handleEditProfile = () => {
-    // TODO: Implementar edición de perfil
-    Alert.alert('Próximamente', 'La edición de perfil será implementada en una futura actualización');
+    navigation.navigate('EditarPerfil');
   };
 
   const handleChangePassword = () => {
@@ -149,29 +209,50 @@ const MiPerfilScreen = ({ navigation }) => {
   };
 
   const handleLogout = () => {
-    Alert.alert(
-      'Cerrar Sesión',
-      '¿Estás seguro de que deseas cerrar sesión?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Cerrar Sesión',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await StorageService.clearAuthData();
-              navigation.reset({
-                index: 0,
-                routes: [{ name: 'Welcome' }],
-              });
-            } catch (error) {
-              console.error('Error logging out:', error);
-              Alert.alert('Error', 'Error al cerrar sesión');
-            }
-          }
+    setShowLogoutModal(true);
+  };
+
+  const confirmLogout = () => {
+    setShowLogoutModal(false);
+    performLogout();
+  };
+
+  const cancelLogout = () => {
+    setShowLogoutModal(false);
+  };
+
+  const performLogout = async () => {
+    try {
+      const refreshToken = await StorageService.getRefreshToken();
+      
+      // Intentar logout en el servidor
+      if (refreshToken) {
+        try {
+          await ApiService.logout(refreshToken);
+        } catch (error) {
+          // Aunque falle el logout en el servidor, seguimos con el logout local
+          console.warn('Error en logout del servidor:', error);
         }
-      ]
-    );
+      }
+
+      // Limpiar datos locales
+      await StorageService.clearAuthData();
+      
+      // Navegar a pantalla de bienvenida
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Welcome' }],
+      });
+    } catch (error) {
+      console.error('Error logging out:', error);
+      setErrorMessage('Error al cerrar sesión. Intenta de nuevo.');
+      setShowErrorModal(true);
+    }
+  };
+
+  const handleErrorModalPress = () => {
+    setShowErrorModal(false);
+    setErrorMessage('');
   };
 
   const goBack = () => {
@@ -242,10 +323,43 @@ const MiPerfilScreen = ({ navigation }) => {
                 <InfoValue>{userData?.correo || 'No especificado'}</InfoValue>
               </InfoRow>
               
-              <InfoRow style={{ borderBottomWidth: 0 }}>
+              <InfoRow>
                 <InfoLabel>Tipo de Usuario:</InfoLabel>
                 <InfoValue style={{ textTransform: 'capitalize' }}>
                   {userData?.tipo_usuario || 'No especificado'}
+                </InfoValue>
+              </InfoRow>
+              
+              <InfoRow>
+                <InfoLabel>Fecha de Nacimiento:</InfoLabel>
+                <InfoValue>
+                  {userData?.fecha_nacimiento ? 
+                    new Date(userData.fecha_nacimiento + 'T00:00:00').toLocaleDateString('es-ES') 
+                    : 'Sin definir'}
+                </InfoValue>
+              </InfoRow>
+              
+              <InfoRow>
+                <InfoLabel>Género:</InfoLabel>
+                <InfoValue style={{ textTransform: 'capitalize' }}>
+                  {userData?.genero || 'Sin definir'}
+                </InfoValue>
+              </InfoRow>
+              
+              <InfoRow>
+                <InfoLabel>Celular:</InfoLabel>
+                <InfoValue>
+                  {userData?.celular || 'Sin definir'}
+                </InfoValue>
+              </InfoRow>
+              
+              <InfoRow style={{ borderBottomWidth: 0 }}>
+                <InfoLabel>Dirección:</InfoLabel>
+                <InfoValue style={{ 
+                  maxWidth: '60%',
+                  textAlign: 'right'
+                }}>
+                  {userData?.direccion || 'Sin definir'}
                 </InfoValue>
               </InfoRow>
             </ServiceCard>
@@ -272,18 +386,24 @@ const MiPerfilScreen = ({ navigation }) => {
 
           {/* Botones de acción */}
           <SectionContainer>
-            <PrimaryButton 
-              onPress={handleEditProfile}
-              style={{ backgroundColor: '#6366f1' }}
-            >
-              <PrimaryButtonText>Editar Perfil</PrimaryButtonText>
-            </PrimaryButton>
-            
             <SecondaryButton 
               onPress={handleLogout}
-              style={{ borderColor: '#dc2626', marginTop: 12 }}
+              style={{ 
+                borderColor: '#e53e3e',
+                backgroundColor: 'rgba(229, 62, 62, 0.05)',
+                borderWidth: 2,
+                shadowColor: '#e53e3e',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 4,
+                elevation: 3
+              }}
             >
-              <SecondaryButtonText style={{ color: '#dc2626' }}>
+              <SecondaryButtonText style={{ 
+                color: '#e53e3e', 
+                fontWeight: '600',
+                letterSpacing: 0.5
+              }}>
                 Cerrar Sesión
               </SecondaryButtonText>
             </SecondaryButton>
@@ -298,6 +418,26 @@ const MiPerfilScreen = ({ navigation }) => {
           </SectionContainer>
         </ContentContainer>
       </ScrollContainer>
+
+      {/* Modal de confirmación de logout */}
+      <ConfirmModal
+        visible={showLogoutModal}
+        title="Cerrar Sesión"
+        message="¿Estás seguro de que deseas cerrar sesión?"
+        confirmText="Cerrar Sesión"
+        cancelText="Cancelar"
+        onConfirm={confirmLogout}
+        onCancel={cancelLogout}
+        icon="🚪"
+      />
+
+      <ErrorModal
+        visible={showErrorModal}
+        title="Error"
+        message={errorMessage}
+        buttonText="Intentar de nuevo"
+        onPress={handleErrorModalPress}
+      />
     </Container>
   );
 };
