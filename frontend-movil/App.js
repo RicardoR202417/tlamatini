@@ -10,6 +10,7 @@ import ServiciosProfesionalesScreen from './src/screens/ServiciosProfesionalesSc
 import ActividadesSocialesScreen from './src/screens/ActividadesSocialesScreen';
 import DonacionesScreen from './src/screens/DonacionesScreen';
 import MiPerfilScreen from './src/screens/MiPerfilScreen';
+import EditarPerfilScreen from './src/screens/EditarPerfilScreen';
 import MisCitasScreen from './src/screens/MisCitasScreen';
 import AvisosScreen from './src/screens/AvisosScreen';
 
@@ -74,6 +75,11 @@ export default function App() {
           name="MiPerfil" 
           component={MiPerfilScreen}
           options={{ title: 'Mi Perfil', headerShown: false }}
+        />
+        <Stack.Screen 
+          name="EditarPerfil" 
+          component={EditarPerfilScreen}
+          options={{ title: 'Editar Perfil', headerShown: false }}
         />
         <Stack.Screen 
           name="MisCitas" 

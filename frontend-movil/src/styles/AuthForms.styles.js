@@ -23,8 +23,8 @@ export const HeaderContainer = styled.View`
 
 // Logo pequeño
 export const SmallLogo = styled.Image`
-  width: 80px;
-  height: 80px;
+  width: 120px;
+  height: 120px;
   margin-bottom: ${spacing.sm};
 `;
 

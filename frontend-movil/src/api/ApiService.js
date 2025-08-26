@@ -12,11 +12,11 @@ class ApiService {
     const url = `${this.baseURL}${endpoint}`;
     
     const config = {
+      ...options,
       headers: {
         'Content-Type': 'application/json',
         ...options.headers,
       },
-      ...options,
     };
 
     try {
@@ -107,6 +107,28 @@ class ApiService {
       body: JSON.stringify({
         refresh_token: refreshToken,
       }),
+    });
+  }
+
+  // Actualizar perfil de usuario
+  async updateProfile(profileData, token) {
+    return this.makeRequest('/api/usuarios/profile', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(profileData),
+    });
+  }
+
+  // Obtener perfil completo del usuario
+  async getProfile(token) {
+    return this.makeRequest('/api/usuarios/profile', {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     });
   }
 }

@@ -3,7 +3,7 @@ import styled from 'styled-components/native';
 // Contenedor principal
 export const Container = styled.SafeAreaView`
   flex: 1;
-  background-color: #f8f9fa;
+  background-color: #f7fafc;
 `;
 
 export const ScrollContainer = styled.ScrollView`
@@ -64,16 +64,18 @@ export const SectionDescription = styled.Text`
 // Cards para servicios profesionales
 export const ServiceCard = styled.TouchableOpacity`
   background-color: white;
-  border-radius: 16px;
+  border-radius: 18px;
   padding: 24px;
   margin-bottom: 16px;
-  shadow-color: #000;
+  shadow-color: #3EAB37;
   shadow-offset: 0px 4px;
-  shadow-opacity: 0.1;
-  shadow-radius: 6px;
+  shadow-opacity: 0.12;
+  shadow-radius: 8px;
   elevation: 6;
-  border-left-width: 5px;
+  border-left-width: 4px;
   border-left-color: #3EAB37;
+  border-width: 1px;
+  border-color: rgba(62, 171, 55, 0.08);
 `;
 
 export const ServiceIcon = styled.Text`
@@ -83,15 +85,17 @@ export const ServiceIcon = styled.Text`
 
 export const ServiceTitle = styled.Text`
   font-size: 20px;
-  font-weight: bold;
+  font-weight: 700;
   color: #2d3748;
   margin-bottom: 8px;
+  letter-spacing: 0.3px;
 `;
 
 export const ServiceDescription = styled.Text`
   font-size: 15px;
-  color: #718096;
+  color: #4a5568;
   line-height: 22px;
+  font-weight: 400;
 `;
 
 // Cards para actividades y programas
