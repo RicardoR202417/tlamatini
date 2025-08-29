@@ -93,8 +93,19 @@ const DonacionesScreen = ({ navigation }) => {
   ];
 
   const handleDonacionPress = (donacion) => {
-    // TODO: Implementar proceso de donación
-    console.log(`Iniciando donación: ${donacion.title}`);
+    switch(donacion.id) {
+      case 'dinero':
+        navigation.navigate('DonacionMonetaria');
+        break;
+      case 'especie':
+        navigation.navigate('DonacionEspecie');
+        break;
+      case 'deducibles':
+        navigation.navigate('DonacionDeducible');
+        break;
+      default:
+        console.log(`Tipo de donación no implementado: ${donacion.id}`);
+    }
   };
 
   const goBack = () => {
@@ -103,7 +114,7 @@ const DonacionesScreen = ({ navigation }) => {
 
   return (
     <Container>
-      <StatusBar backgroundColor="#dc2626" barStyle="light-content" />
+      <StatusBar backgroundColor="#3EAB37" barStyle="light-content" />
       
       {/* Botón de regreso */}
       <BackButton onPress={goBack}>
@@ -112,7 +123,7 @@ const DonacionesScreen = ({ navigation }) => {
       
       <ScrollContainer showsVerticalScrollIndicator={false}>
         {/* Header */}
-        <HeaderContainer style={{ backgroundColor: '#dc2626' }}>
+        <HeaderContainer style={{ backgroundColor: '#3EAB37' }}>
           <WelcomeText>Apóyanos / Donaciones</WelcomeText>
           <SubtitleText>
             Tu generosidad hace la diferencia. Conoce las diferentes formas en que puedes contribuir.
@@ -187,18 +198,18 @@ const DonacionesScreen = ({ navigation }) => {
           {/* Botones de acción */}
           <SectionContainer>
             <PrimaryButton 
-              onPress={() => console.log('Hacer donación rápida')}
-              style={{ backgroundColor: '#dc2626' }}
+              onPress={() => navigation.navigate('SelectorTipoDonacion')}
+              style={{ backgroundColor: '#3EAB37' }}
             >
               <PrimaryButtonText>Hacer Donación Ahora</PrimaryButtonText>
             </PrimaryButton>
             
             <SecondaryButton 
-              onPress={() => console.log('Ver reportes de transparencia')}
-              style={{ borderColor: '#dc2626' }}
+              onPress={() => navigation.navigate('MisDonaciones')}
+              style={{ borderColor: '#3EAB37' }}
             >
-              <SecondaryButtonText style={{ color: '#dc2626' }}>
-                Ver Reportes de Transparencia
+              <SecondaryButtonText style={{ color: '#3EAB37' }}>
+                Ver Mis Donaciones
               </SecondaryButtonText>
             </SecondaryButton>
           </SectionContainer>

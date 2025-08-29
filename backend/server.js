@@ -7,6 +7,7 @@ import helmet from 'helmet';
 
 import database, { testConnection } from './src/models/index.js';
 import routes from './src/routes/index.js';
+import { validatePaymentConfig } from './src/config/payments.js';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -14,6 +15,9 @@ const PORT = process.env.PORT || 4000;
 /* ===== Middlewares ===== */
 app.use(helmet());
 app.use(express.json());
+
+// Servir archivos estáticos (evidencias)
+app.use('/uploads', express.static('uploads'));
 
 const allowList = (process.env.CORS_ORIGINS || '')
   .split(',')
@@ -48,6 +52,9 @@ app.use((err, _req, res, _next) => {
   try {
     console.log('[BOOT] Probando conexión a BD…');
     await database.initialize();
+
+    console.log('[BOOT] Validando configuración de pagos…');
+    validatePaymentConfig();
 
     app.listen(PORT, () => {
       console.log(`✅ API corriendo en http://localhost:${PORT}`);

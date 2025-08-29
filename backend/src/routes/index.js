@@ -7,6 +7,9 @@ import authRoutes from './auth.routes.js';
 import profesionalesRoutes from './profesionales.routes.js';
 import citasRoutes from './citas.routes.js';
 import consultasRoutes from './consultas.routes.js';
+import donacionesRoutes from './donaciones.routes.js';
+import facturasRoutes from './facturas.routes.js';
+import pagosRoutes from './pagos.routes.js';
 
 const router = Router();
 
@@ -18,5 +21,8 @@ router.use('/auth', authRoutes);
 router.use('/profesionales', profesionalesRoutes);
 router.use('/citas', citasRoutes);
 router.use('/consultas', consultasRoutes);
+router.use('/donaciones', donacionesRoutes);
+router.use('/facturas', facturasRoutes);
+router.use('/pagos', pagosRoutes);
 
 export default router;

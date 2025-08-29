@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { UserProvider } from './src/context/UserContext';
 import WelcomeScreen from './src/screens/WelcomeScreen';
 import LoginScreen from './src/screens/LoginScreen';
 import RegisterScreen from './src/screens/RegisterScreen';
@@ -9,6 +10,11 @@ import ProfesionalHomeScreen from './src/screens/ProfesionalHomeScreen';
 import ServiciosProfesionalesScreen from './src/screens/ServiciosProfesionalesScreen';
 import ActividadesSocialesScreen from './src/screens/ActividadesSocialesScreen';
 import DonacionesScreen from './src/screens/DonacionesScreen';
+import SelectorTipoDonacionScreen from './src/screens/SelectorTipoDonacionScreen';
+import DonacionMonetariaScreen from './src/screens/DonacionMonetariaScreen';
+import DonacionDeducibleScreen from './src/screens/DonacionDeducibleScreen';
+import DonacionEspecieScreen from './src/screens/DonacionEspecieScreen';
+import MisDonacionesScreen from './src/screens/MisDonacionesScreen';
 import MiPerfilScreen from './src/screens/MiPerfilScreen';
 import EditarPerfilScreen from './src/screens/EditarPerfilScreen';
 import MisCitasScreen from './src/screens/MisCitasScreen';
@@ -18,6 +24,7 @@ const Stack = createNativeStackNavigator();
 
 export default function App() {
   return (
+    <UserProvider>
     <NavigationContainer>
       <Stack.Navigator 
         initialRouteName="Welcome"
@@ -72,6 +79,31 @@ export default function App() {
           options={{ title: 'Donaciones', headerShown: false }}
         />
         <Stack.Screen 
+          name="SelectorTipoDonacion" 
+          component={SelectorTipoDonacionScreen}
+          options={{ title: 'Tipo de Donación', headerShown: false }}
+        />
+        <Stack.Screen 
+          name="DonacionMonetaria" 
+          component={DonacionMonetariaScreen}
+          options={{ title: 'Donación Monetaria', headerShown: false }}
+        />
+        <Stack.Screen 
+          name="DonacionDeducible" 
+          component={DonacionDeducibleScreen}
+          options={{ title: 'Donación Deducible', headerShown: false }}
+        />
+        <Stack.Screen 
+          name="DonacionEspecie" 
+          component={DonacionEspecieScreen}
+          options={{ title: 'Donación en Especie', headerShown: false }}
+        />
+        <Stack.Screen 
+          name="MisDonaciones" 
+          component={MisDonacionesScreen}
+          options={{ title: 'Mis Donaciones', headerShown: false }}
+        />
+        <Stack.Screen 
           name="MiPerfil" 
           component={MiPerfilScreen}
           options={{ title: 'Mi Perfil', headerShown: false }}
@@ -93,5 +125,6 @@ export default function App() {
         />
       </Stack.Navigator>
     </NavigationContainer>
+    </UserProvider>
   );
 }

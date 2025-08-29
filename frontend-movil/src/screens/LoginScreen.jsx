@@ -50,23 +50,17 @@ const LoginScreen = ({ navigation }) => {
 
   // Web Client ID desde .env del frontend
   const clientId = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID?.trim();
+  const iosClientId = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID?.trim();
+  const androidClientId = process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID?.trim();
 
   // Hook ÚNICO — OIDC implícito (id_token) con proxy fijo
   const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
     clientId,
+    iosClientId,
+    androidClientId,
     redirectUri: REDIRECT, // 🔒 evita exp://
     // (cuando hagas build nativo podrás pasar androidClientId/iosClientId)
   });
-
-  // Depuración para confirmar qué estamos enviando
-  useEffect(() => {
-    Alert.alert(
-      'Auth Debug (init)',
-      `clientId: ${clientId ? clientId.slice(0, 10) + '…' : '⚠️ vacío'}\n` +
-      `redirectUri: ${REDIRECT}\n` +
-      `request?: ${!!request}`
-    );
-  }, [request]);
 
   // Procesa la respuesta de Google
   useEffect(() => {

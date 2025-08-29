@@ -131,6 +131,61 @@ class ApiService {
       },
     });
   }
+
+  // Método genérico para requests
+  async request(method, endpoint, data = null, headers = {}) {
+    const config = {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+        ...headers,
+      },
+    };
+
+    if (data && method !== 'GET') {
+      config.body = JSON.stringify(data);
+    }
+
+    return this.makeRequest(endpoint, config);
+  }
+
+  // Método para requests con archivos (FormData)
+  async requestWithFile(method, endpoint, formData, headers = {}) {
+    const url = `${this.baseURL}${endpoint}`;
+    
+    const config = {
+      method,
+      headers: {
+        // No incluir Content-Type para FormData, lo establecerá automáticamente
+        ...headers,
+      },
+      body: formData,
+    };
+
+    try {
+      const response = await fetch(url, config);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw {
+          status: response.status,
+          message: data.message || 'Error en la petición',
+          errors: data.errors || [],
+        };
+      }
+
+      return data;
+    } catch (error) {
+      if (error.status) {
+        throw error;
+      }
+      throw {
+        status: 0,
+        message: 'Error de conexión con el servidor',
+        errors: [],
+      };
+    }
+  }
 }
 
 export default new ApiService();

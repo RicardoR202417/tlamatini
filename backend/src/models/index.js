@@ -8,19 +8,31 @@ export { Usuario } from './Usuario.js';           // asume export nombrado en Us
 import Cita from './Cita.js';
 import Consulta from './Consulta.js';
 import Profesional from './Profesional.js';
+import Donacion from './Donacion.js';
+import Factura from './Factura.js';
 
 // Exporta modelos por si los necesitas individualmente
 export { default as Cita } from './Cita.js';
 export { default as Consulta } from './Consulta.js';
 export { default as Profesional } from './Profesional.js';
+export { default as Donacion } from './Donacion.js';
+export { default as Factura } from './Factura.js';
 
-// ===== Asociaciones (opcional, descomenta si tienes los modelos y lo necesitas) =====
-// import { Usuario } from './Usuario.js';
+// ===== Asociaciones =====
+import { Usuario } from './Usuario.js';
+
+// Asociaciones existentes (descomenta si las necesitas)
 // Cita.belongsTo(Usuario, { foreignKey: 'id_beneficiario', as: 'beneficiario' });
 // Cita.belongsTo(Profesional, { foreignKey: 'id_profesional' });
 // Consulta.belongsTo(Cita, { foreignKey: 'id_cita' });
-// Consulta.belongsTo(Usuario, { foreignKey: 'id_beneficiario', as: 'beneficiario' });
-// Consulta.belongsTo(Profesional, { foreignKey: 'id_profesional' });
+
+// Asociaciones para donaciones
+Donacion.belongsTo(Usuario, { foreignKey: 'id_usuario', as: 'usuario' });
+Usuario.hasMany(Donacion, { foreignKey: 'id_usuario', as: 'donaciones' });
+
+// Asociaciones para facturas
+Factura.belongsTo(Donacion, { foreignKey: 'id_donacion', as: 'donacion' });
+Donacion.hasOne(Factura, { foreignKey: 'id_donacion', as: 'factura' });
 
 // =====================================================================================
 // Clase de arranque/control de BD con reintentos para conexión en frío.
