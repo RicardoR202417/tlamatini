@@ -2,7 +2,10 @@
 import {
   listarUsuarios,
   getProfile,
-  updateProfile
+  updateProfile,
+  validateUpdateProfile,
+  changePassword,
+  validateChangePassword
 } from '../controllers/usuarios.controller.js';
 import {
   register,
@@ -18,7 +21,8 @@ router.post('/login', login);
 
 // Rutas protegidas
 router.get('/profile', authRequired, getProfile);
-router.put('/profile', authRequired, updateProfile);
+router.put('/profile', authRequired, validateUpdateProfile, updateProfile);
+router.put('/contrasena', authRequired, validateChangePassword, changePassword);
 router.get('/', authRequired, listarUsuarios);
 
 export default router;

@@ -19,7 +19,7 @@ export const Usuario = sequelize.define('usuarios', {
     type: DataTypes.ENUM('masculino', 'femenino', 'no binario', 'prefiero no decirlo'),
     allowNull: true
   },
-  celular: { type: DataTypes.STRING(20), allowNull: true },
+  celular: { type: DataTypes.STRING(20), allowNull: true, unique: true },
   direccion: { type: DataTypes.TEXT, allowNull: true },
   foto_perfil: { type: DataTypes.STRING(255), allowNull: true }
 }, { 

@@ -24,5 +24,4 @@ router.use('/consultas', consultasRoutes);
 router.use('/donaciones', donacionesRoutes);
 router.use('/facturas', facturasRoutes);
 router.use('/pagos', pagosRoutes);
-
 export default router;
