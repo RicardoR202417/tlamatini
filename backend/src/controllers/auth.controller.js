@@ -379,3 +379,55 @@ export async function resetPassword(req, res) {
     return res.status(500).json({ mensaje: 'error interno' });
   }
 }
+
+/**
+ * ENDPOINT DE DEBUG - Devuelve un token válido para desarrollo
+ * GET /api/auth/debug-token
+ * Solo funciona en desarrollo (NODE_ENV=development)
+ */
+export async function getDebugToken(req, res) {
+  if (process.env.NODE_ENV !== 'development') {
+    return res.status(403).json({ message: 'Endpoint solo disponible en desarrollo' });
+  }
+
+  try {
+    // Buscar o crear usuario de test
+    let user = await Usuario.findOne({ where: { correo: 'test@dev.com' } });
+    
+    if (!user) {
+      // Crear usuario de test si no existe
+      const hashedPassword = await bcrypt.hash('test123456', 10);
+      user = await Usuario.create({
+        nombres: 'Test',
+        apellidos: 'Developer',
+        correo: 'test@dev.com',
+        password: hashedPassword,
+        tipo_usuario: 'beneficiario',
+        validado: true
+      });
+    }
+
+    // Generar token válido
+    const token = signToken(user);
+
+    return res.json({
+      success: true,
+      message: 'Token de desarrollo generado',
+      token,
+      user: {
+        id_usuario: user.id_usuario,
+        nombres: user.nombres,
+        apellidos: user.apellidos,
+        correo: user.correo,
+        tipo_usuario: user.tipo_usuario
+      }
+    });
+  } catch (error) {
+    console.error('Error al generar token de debug:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error al generar token',
+      error: error.message
+    });
+  }
+}

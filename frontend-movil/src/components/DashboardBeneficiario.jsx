@@ -104,7 +104,7 @@ const DashboardBeneficiario = ({ navigation }) => {
         break;
       
       case 'actividades-sociales':
-        navigation.navigate('ActividadesSociales');
+        navigation.navigate('Actividades');
         break;
       
       case 'donaciones':
@@ -153,10 +153,19 @@ const DashboardBeneficiario = ({ navigation }) => {
               <QuickActionIcon>📋</QuickActionIcon>
               <QuickActionText>Mis Citas</QuickActionText>
             </QuickActionButton>
-            
+            <QuickActionButton onPress={() => navigation.navigate('MisInscripciones')}>
+              <QuickActionIcon>📑</QuickActionIcon>
+              <QuickActionText>Mis Actividades</QuickActionText>
+            </QuickActionButton>
+
             <QuickActionButton onPress={() => navigation.navigate('Avisos')}>
               <QuickActionIcon>🔔</QuickActionIcon>
               <QuickActionText>Avisos</QuickActionText>
+            </QuickActionButton>
+
+            <QuickActionButton onPress={() => navigation.navigate('Contacto')}>
+              <QuickActionIcon>✉️</QuickActionIcon>
+              <QuickActionText>Contacto</QuickActionText>
             </QuickActionButton>
           </QuickActionsContainer>
 

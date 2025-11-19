@@ -1,5 +1,5 @@
-import React from 'react';
-import { StatusBar, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect, useContext } from 'react';
+import { StatusBar, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import {
   Container,
   ScrollContainer,
@@ -21,6 +21,8 @@ import {
   StatusText
 } from '../styles/BeneficiarioHome.styles';
 import styled from 'styled-components/native';
+import { obtenerActividades } from '../services/actividadesService';
+import { UserContext } from '../context/UserContext';
 
 // Estilos específicos para esta pantalla
 const BackButton = styled.TouchableOpacity`
@@ -48,60 +50,36 @@ const BackIcon = styled.Text`
 `;
 
 const ActividadesSocialesScreen = ({ navigation }) => {
-  // Actividades y Programas Sociales
-  const actividadesSociales = [
-    {
-      id: 'banco-alimentos',
-      icon: '🍞',
-      title: 'Banco de Alimentos',
-      description: 'Distribución semanal de despensas básicas',
-      horario: 'Sábados 9:00 AM - 12:00 PM',
-      ubicacion: 'Centro Comunitario TLAMATINI',
-      disponible: true
-    },
-    {
-      id: 'senderismo',
-      icon: '🥾',
-      title: 'Senderismo Terapéutico',
-      description: 'Actividades al aire libre para bienestar físico y mental',
-      horario: 'Domingos 7:00 AM - 11:00 AM',
-      ubicacion: 'Parque Ecológico Municipal',
-      disponible: true
-    },
-    {
-      id: 'talleres',
-      icon: '🎨',
-      title: 'Talleres Creativos',
-      description: 'Manualidades, arte terapia y expresión creativa',
-      horario: 'Miércoles 4:00 PM - 6:00 PM',
-      ubicacion: 'Aula de Arte TLAMATINI',
-      disponible: true
-    },
-    {
-      id: 'capacitacion',
-      icon: '📚',
-      title: 'Capacitación Laboral',
-      description: 'Cursos de oficios y desarrollo de habilidades profesionales',
-      horario: 'Lunes a Viernes 2:00 PM - 5:00 PM',
-      ubicacion: 'Centro de Capacitación',
-      disponible: false
-    },
-    {
-      id: 'deportes',
-      icon: '⚽',
-      title: 'Actividades Deportivas',
-      description: 'Fútbol, básquetbol y actividades recreativas grupales',
-      horario: 'Martes y Jueves 5:00 PM - 7:00 PM',
-      ubicacion: 'Cancha Deportiva Municipal',
-      disponible: true
+  const { user, token } = useContext(UserContext);
+  const [actividades, setActividades] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [isMock, setIsMock] = useState(false);
+
+  // Cargar actividades cuando monta el componente
+  useEffect(() => {
+    cargarActividades();
+  }, []);
+
+  const cargarActividades = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await obtenerActividades();
+      setActividades(response.data || []);
+      setIsMock(!!response.isMock);
+    } catch (err) {
+      console.error('Error al cargar actividades:', err);
+      setError(err.message);
+      Alert.alert('Error', 'No se pudieron cargar las actividades');
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
 
   const handleActividadPress = (actividad) => {
-    if (actividad.disponible) {
-      // TODO: Implementar inscripción a actividad
-      console.log(`Inscribiéndose a: ${actividad.title}`);
-    }
+    // Navegar a la pantalla de detalles
+    navigation.navigate('DetalleActividad', { actividad });
   };
 
   const goBack = () => {
@@ -136,49 +114,103 @@ const ActividadesSocialesScreen = ({ navigation }) => {
             </SectionDescription>
           </SectionContainer>
 
+          {/* Indicador de carga */}
+          {loading && (
+            <SectionContainer>
+              <ActivityIndicator size="large" color="#2563eb" />
+            </SectionContainer>
+          )}
+
+          {/* Mensaje de error */}
+          {error && !loading && (
+            <SectionContainer>
+              <ActivityDescription style={{ color: '#dc2626', marginBottom: 10 }}>
+                Error: {error}
+              </ActivityDescription>
+              <PrimaryButton onPress={cargarActividades}>
+                <PrimaryButtonText>Reintentar</PrimaryButtonText>
+              </PrimaryButton>
+            </SectionContainer>
+          )}
+
+          {/* Banner cuando se usan datos mock */}
+          {!loading && isMock && (
+            <SectionContainer>
+              <SectionDescription style={{ color: '#92400e' }}>
+                Estás viendo datos de ejemplo porque el servidor no respondió.
+              </SectionDescription>
+            </SectionContainer>
+          )}
+
           {/* Lista de actividades */}
-          {actividadesSociales.map((actividad) => (
-            <ActivityCard 
-              key={actividad.id} 
-              onPress={() => handleActividadPress(actividad)}
-              style={{ 
-                opacity: actividad.disponible ? 1 : 0.6,
-                marginBottom: 15
-              }}
-            >
-              <ActivityIcon>{actividad.icon}</ActivityIcon>
-              <ActivityInfo>
-                <ActivityTitle>{actividad.title}</ActivityTitle>
-                <ActivityDescription>{actividad.description}</ActivityDescription>
-                {actividad.disponible && (
-                  <>
-                    <ActivityDescription style={{ fontWeight: 'bold', marginTop: 5 }}>
-                      📅 {actividad.horario}
-                    </ActivityDescription>
-                    <ActivityDescription style={{ color: '#2563eb' }}>
-                      📍 {actividad.ubicacion}
-                    </ActivityDescription>
-                  </>
-                )}
-                <StatusIndicator 
-                  color={actividad.disponible ? '#2563eb' : '#9CA3AF'}
-                  style={{ marginTop: 8 }}
+          {!loading && actividades && actividades.length > 0 ? (
+            actividades.map((actividad) => {
+              const iconMap = {
+                'banco_alimentos': '🍞',
+                'senderismo_terapeutico': '🥾',
+                'terapia_psicologica': '💭',
+                'talleres': '🎨',
+                'capacitacion': '📚',
+                'deportes': '⚽'
+              };
+              
+              const icon = iconMap[actividad.tipo] || '📌';
+              const fecha = new Date(actividad.fecha);
+              const fechaFormato = fecha.toLocaleDateString('es-MX', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+              });
+
+              return (
+                <ActivityCard 
+                  key={actividad.id_actividad} 
+                  onPress={() => handleActividadPress(actividad)}
+                  style={{ marginBottom: 15 }}
                 >
-                  <StatusText>{actividad.disponible ? 'Inscripción Abierta' : 'Próximamente'}</StatusText>
-                </StatusIndicator>
-              </ActivityInfo>
-            </ActivityCard>
-          ))}
+                  <ActivityIcon>{icon}</ActivityIcon>
+                  <ActivityInfo>
+                    <ActivityTitle>{actividad.titulo}</ActivityTitle>
+                    <ActivityDescription>{actividad.descripcion}</ActivityDescription>
+                    {actividad.horario_inicio && (
+                      <ActivityDescription style={{ fontWeight: 'bold', marginTop: 5 }}>
+                        📅 {fechaFormato} - {actividad.horario_inicio}
+                      </ActivityDescription>
+                    )}
+                    {actividad.ubicacion && (
+                      <ActivityDescription style={{ color: '#2563eb' }}>
+                        📍 {actividad.ubicacion}
+                      </ActivityDescription>
+                    )}
+                    <StatusIndicator 
+                      color="#2563eb"
+                      style={{ marginTop: 8 }}
+                    >
+                      <StatusText>Inscripción Abierta</StatusText>
+                    </StatusIndicator>
+                  </ActivityInfo>
+                </ActivityCard>
+              );
+            })
+          ) : !loading && actividades && actividades.length === 0 ? (
+            <SectionContainer>
+              <ActivityDescription style={{ textAlign: 'center', color: '#6B7280' }}>
+                No hay actividades disponibles en este momento.
+              </ActivityDescription>
+            </SectionContainer>
+          ) : null}
 
           {/* Botón de acción */}
-          <SectionContainer>
-            <PrimaryButton 
-              onPress={() => console.log('Ver calendario completo')}
-              style={{ backgroundColor: '#2563eb' }}
-            >
-              <PrimaryButtonText>Ver Calendario Completo</PrimaryButtonText>
-            </PrimaryButton>
-          </SectionContainer>
+          {!loading && (
+            <SectionContainer>
+              <PrimaryButton 
+                onPress={cargarActividades}
+                style={{ backgroundColor: '#2563eb' }}
+              >
+                <PrimaryButtonText>Actualizar</PrimaryButtonText>
+              </PrimaryButton>
+            </SectionContainer>
+          )}
         </ContentContainer>
       </ScrollContainer>
     </Container>

@@ -1,6 +1,6 @@
 import { VITE_API_URL } from '@env';
 
-const API_BASE_URL = VITE_API_URL || 'http://localhost:3000';
+export const API_BASE_URL = VITE_API_URL || 'http://localhost:3000';
 
 class ApiService {
   constructor() {
