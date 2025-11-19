@@ -10,6 +10,9 @@ import Consulta from './Consulta.js';
 import Profesional from './Profesional.js';
 import Donacion from './Donacion.js';
 import Factura from './Factura.js';
+import Actividad from './Actividad.js';
+import Inscripcion from './Inscripcion.js';
+import MensajeContacto from './MensajeContacto.js';
 
 // Exporta modelos por si los necesitas individualmente
 export { default as Cita } from './Cita.js';
@@ -17,6 +20,9 @@ export { default as Consulta } from './Consulta.js';
 export { default as Profesional } from './Profesional.js';
 export { default as Donacion } from './Donacion.js';
 export { default as Factura } from './Factura.js';
+export { default as Actividad } from './Actividad.js';
+export { default as Inscripcion } from './Inscripcion.js';
+export { default as MensajeContacto } from './MensajeContacto.js';
 
 // ===== Asociaciones =====
 import { Usuario } from './Usuario.js';
@@ -33,6 +39,12 @@ Usuario.hasMany(Donacion, { foreignKey: 'id_usuario', as: 'donaciones' });
 // Asociaciones para facturas
 Factura.belongsTo(Donacion, { foreignKey: 'id_donacion', as: 'donacion' });
 Donacion.hasOne(Factura, { foreignKey: 'id_donacion', as: 'factura' });
+
+// Asociaciones para actividades e inscripciones
+Inscripcion.belongsTo(Usuario, { foreignKey: 'id_usuario', as: 'usuario' });
+Inscripcion.belongsTo(Actividad, { foreignKey: 'id_actividad', as: 'actividad' });
+Usuario.hasMany(Inscripcion, { foreignKey: 'id_usuario', as: 'inscripciones' });
+Actividad.hasMany(Inscripcion, { foreignKey: 'id_actividad', as: 'inscripciones' });
 
 // =====================================================================================
 // Clase de arranque/control de BD con reintentos para conexión en frío.

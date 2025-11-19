@@ -10,6 +10,8 @@ import consultasRoutes from './consultas.routes.js';
 import donacionesRoutes from './donaciones.routes.js';
 import facturasRoutes from './facturas.routes.js';
 import pagosRoutes from './pagos.routes.js';
+import actividadesRoutes from './actividades.routes.js';
+import contactoRoutes from './contacto.routes.js';
 
 const router = Router();
 
@@ -24,5 +26,7 @@ router.use('/consultas', consultasRoutes);
 router.use('/donaciones', donacionesRoutes);
 router.use('/facturas', facturasRoutes);
 router.use('/pagos', pagosRoutes);
+router.use('/actividades', actividadesRoutes);
+router.use('/contacto', contactoRoutes);
 
 export default router;

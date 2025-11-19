@@ -3,7 +3,7 @@ import rateLimit from 'express-rate-limit';
 import {
   register, login, googleSignIn, me,
   validateLogin, validateRegister,
-  refresh, logout, forgotPassword, resetPassword
+  refresh, logout, forgotPassword, resetPassword, getDebugToken
 } from '../controllers/auth.controller.js';
 import { authRequired } from '../middlewares/auth.js';
 
@@ -33,5 +33,8 @@ router.post('/auth/forgot', limiter, forgotPassword);
 router.post('/auth/reset', limiter, resetPassword);
 
 router.get('/me', authRequired, me);
+
+// Endpoint de debug - solo en desarrollo
+router.get('/debug-token', getDebugToken);
 
 export default router;
