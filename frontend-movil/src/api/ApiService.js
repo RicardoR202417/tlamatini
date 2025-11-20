@@ -146,8 +146,8 @@ class ApiService {
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
-        password_actual: passwordData.password_actual,
-        nueva_password: passwordData.nueva_password
+        contrasena_actual: passwordData.contrasena_actual,
+        nueva_contrasena: passwordData.nueva_contrasena
       }),
     });
   }

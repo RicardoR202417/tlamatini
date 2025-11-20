@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { View, TouchableOpacity, ActivityIndicator, Alert, Modal, ScrollView } from 'react-native';
+import { View, TouchableOpacity, ActivityIndicator, Alert, Modal, ScrollView, StatusBar } from 'react-native';
 import styled from 'styled-components/native';
 import { UserContext } from '../context/UserContext';
 import { enviarMensajeContacto } from '../services/contactoService';
@@ -156,6 +156,7 @@ const ContactoScreen = ({ navigation }) => {
 
   return (
     <Container>
+      <StatusBar backgroundColor="#2563eb" barStyle="light-content" />
       <Header>
         <BackButton onPress={() => navigation.goBack()}>
           <BackIcon>←</BackIcon>

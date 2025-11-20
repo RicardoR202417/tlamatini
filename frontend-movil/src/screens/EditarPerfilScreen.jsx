@@ -336,12 +336,12 @@ const EditarPerfilScreen = ({ navigation }) => {
 
   return (
     <KeyboardAvoidingView 
-      style={{ flex: 1 }} 
+      style={{ flex: 1 }}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
     >
       <FormContainer contentContainerStyle={{ flexGrow: 1 }}>
-        <StatusBar style="dark" />
+        <StatusBar backgroundColor="#3EAB37" barStyle="light-content" />
         
         {/* Botón de regreso */}
         <BackButton onPress={goBack}>

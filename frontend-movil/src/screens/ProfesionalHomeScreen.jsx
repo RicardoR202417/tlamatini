@@ -131,7 +131,7 @@ const ProfesionalHomeScreen = ({ navigation }) => {
   if (loading) {
     return (
       <Container>
-        <StatusBar backgroundColor="#6366f1" barStyle="light-content" />
+        <StatusBar backgroundColor="#3EAB37" barStyle="light-content" />
         <ContentContainer>
           <WelcomeText>Cargando...</WelcomeText>
         </ContentContainer>
@@ -141,11 +141,11 @@ const ProfesionalHomeScreen = ({ navigation }) => {
 
   return (
     <Container>
-      <StatusBar backgroundColor="#6366f1" barStyle="light-content" />
+      <StatusBar backgroundColor="#3EAB37" barStyle="light-content" />
       
       <ScrollContainer showsVerticalScrollIndicator={false}>
         {/* Header con bienvenida personalizada */}
-        <HeaderContainer style={{ backgroundColor: '#6366f1' }}>
+        <HeaderContainer style={{ backgroundColor: '#3EAB37' }}>
           <WelcomeText>¡Hola Profesional!</WelcomeText>
           <UserNameText>{userData?.nombres} {userData?.apellidos}</UserNameText>
           <SubtitleText>

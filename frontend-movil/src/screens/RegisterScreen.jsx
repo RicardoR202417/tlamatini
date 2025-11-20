@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StatusBar, Alert, ActivityIndicator, Text, View, TouchableOpacity } from 'react-native';
+import { StatusBar, Alert, ActivityIndicator, Text, View, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
 import ApiService from '../api/ApiService';
 import StorageService from '../services/StorageService';
 import SuccessModal from '../components/SuccessModal';
@@ -175,10 +175,15 @@ const RegisterScreen = ({ navigation }) => {
   }
 
   return (
-    <FormContainer contentContainerStyle={{ flexGrow: 1 }}>
-      <StatusBar style="dark" />
-      
-      <ContentContainer>
+    <KeyboardAvoidingView 
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+    >
+      <FormContainer contentContainerStyle={{ flexGrow: 1 }}>
+        <StatusBar style="dark" />
+        
+        <ContentContainer>
         <HeaderContainer>
           <SmallLogo
             source={require('../../assets/logo_blanco.jpg')}
@@ -410,7 +415,8 @@ const RegisterScreen = ({ navigation }) => {
         buttonText="Intentar de nuevo"
         onPress={handleErrorModalPress}
       />
-    </FormContainer>
+      </FormContainer>
+    </KeyboardAvoidingView>
   );
 };
 

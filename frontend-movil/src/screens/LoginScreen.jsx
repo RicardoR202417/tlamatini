@@ -1,6 +1,6 @@
 // src/screens/LoginScreen.jsx
 import React, { useEffect, useState } from 'react';
-import { StatusBar, Alert, ActivityIndicator } from 'react-native';
+import { StatusBar, Alert, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
 import * as AuthSession from 'expo-auth-session';
@@ -164,9 +164,14 @@ const LoginScreen = ({ navigation }) => {
   }
 
   return (
-    <FormContainer contentContainerStyle={{ flexGrow: 1 }}>
-      <StatusBar style="dark" />
-      <ContentContainer>
+    <KeyboardAvoidingView 
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+    >
+      <FormContainer contentContainerStyle={{ flexGrow: 1 }}>
+        <StatusBar style="dark" />
+        <ContentContainer>
         <HeaderContainer>
           <SmallLogo source={require('../../assets/logo_blanco.jpg')} resizeMode="contain" />
           <FormTitle>Iniciar Sesión</FormTitle>
@@ -230,7 +235,8 @@ const LoginScreen = ({ navigation }) => {
         buttonText="Intentar de nuevo"
         onPress={handleErrorModalPress}
       />
-    </FormContainer>
+      </FormContainer>
+    </KeyboardAvoidingView>
   );
 };
 

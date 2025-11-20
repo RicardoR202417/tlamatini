@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { View, Text, ActivityIndicator, Alert, TouchableOpacity, FlatList } from 'react-native';
+import { View, Text, ActivityIndicator, Alert, TouchableOpacity, FlatList, StatusBar } from 'react-native';
 import styled from 'styled-components/native';
 import { UserContext } from '../context/UserContext';
 import { obtenerInscripcionesUsuario, obtenerActividadPorId } from '../services/actividadesService';
@@ -63,6 +63,7 @@ const MisInscripcionesScreen = ({ navigation }) => {
 
   return (
     <Container>
+      <StatusBar backgroundColor="#2563eb" barStyle="light-content" />
       <Header>
         <Title>Mis Actividades</Title>
         <DashboardButton onPress={() => navigation.navigate('BeneficiarioHome')}>
