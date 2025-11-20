@@ -1,5 +1,5 @@
 import { Op } from 'sequelize';
-import Profesional from '../models/Profesional.js';
+import { Profesional } from '../models/Profesional.js';
 // import { Usuario } from '../models/Usuario.js'; // si quieres join con datos del usuario
 
 export async function crear(req, res, next) {

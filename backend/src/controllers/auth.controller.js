@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import { body, validationResult } from 'express-validator';
 import { OAuth2Client } from 'google-auth-library';
 import { Usuario } from '../models/Usuario.js';
+import { Profesional } from '../models/Profesional.js';
 import crypto from 'crypto';
 import { RefreshToken } from '../models/RefreshToken.js';
 import { PasswordReset } from '../models/PasswordReset.js';
@@ -61,8 +62,35 @@ export async function register(req, res) {
       correo: correo.toLowerCase(),
       password: hash,
       tipo_usuario,     // beneficiario | profesional
-      validado: true    // puedes dejarlo en true o manejar validación por correo más adelante
+      validado: true,   // puedes dejarlo en true o manejar validación por correo más adelante
+      is_active: true,  // usuario activo por defecto
+      deleted_at: null  // no eliminado
     });
+
+    // Si el usuario es profesional, crear registro en tabla profesionales
+    if (tipo_usuario === 'profesional') {
+      await Profesional.create({
+        id_profesional: user.id_usuario, // FK que referencia al usuario
+        especialidad: null,              // se llena después en el perfil
+        cedula_profesional: null,        // se llena después en el perfil
+        documento_url: null              // se llena después en el perfil
+      });
+      console.log(`Registro de profesional creado para user ID: ${user.id_usuario}`);
+    }
+
+    // Determinar la ruta de redirección según el tipo de usuario
+    let redirectTo;
+    switch (tipo_usuario) {
+      case 'beneficiario':
+        redirectTo = '/dashboard/beneficiario';
+        break;
+      case 'profesional':
+        redirectTo = '/dashboard/profesional';
+        break;
+      default:
+        redirectTo = '/dashboard';
+        break;
+    }
 
    const token = signToken(user);
 const refresh_token = await issueRefreshToken(user.id_usuario); 
@@ -75,7 +103,12 @@ return res.status(201).json({
         nombres: user.nombres,
         apellidos: user.apellidos,
         correo: user.correo,
-        tipo_usuario: user.tipo_usuario
+        tipo_usuario: user.tipo_usuario,
+        validado: user.validado
+      },
+      redirect: {
+        to: redirectTo,
+        userType: tipo_usuario
       }
     });
   } catch (e) {
@@ -90,7 +123,13 @@ export async function login(req, res) {
   const { correo, password } = req.body;
 
   try {
-    const user = await Usuario.findOne({ where: { correo: correo.toLowerCase() } });
+    const user = await Usuario.findOne({ 
+      where: { 
+        correo: correo.toLowerCase(),
+        is_active: true // Solo usuarios activos pueden hacer login
+      } 
+    });
+    
     if (!user || !user.password) {
       // password puede ser null si se registró solo con Google
       return res.status(401).json({ message: 'Credenciales inválidas' });
@@ -99,18 +138,41 @@ export async function login(req, res) {
     const ok = await bcrypt.compare(password, user.password);
     if (!ok) return res.status(401).json({ message: 'Credenciales inválidas' });
 
+    // Determinar la ruta de redirección según el tipo de usuario
+    let redirectTo;
+    switch (user.tipo_usuario) {
+      case 'beneficiario':
+        redirectTo = '/dashboard/beneficiario';
+        break;
+      case 'profesional':
+        redirectTo = '/dashboard/profesional';
+        break;
+      case 'administrador':
+        redirectTo = '/dashboard/admin';
+        break;
+      default:
+        redirectTo = '/dashboard';
+        break;
+    }
+
     const token = signToken(user);
-const refresh_token = await issueRefreshToken(user.id_usuario);
+    const refresh_token = await issueRefreshToken(user.id_usuario);
+    
     return res.json({
       message: 'Login exitoso',
-       token,
-  refresh_token,
+      token,
+      refresh_token,
       user: {
         id_usuario: user.id_usuario,
         nombres: user.nombres,
         apellidos: user.apellidos,
         correo: user.correo,
-        tipo_usuario: user.tipo_usuario
+        tipo_usuario: user.tipo_usuario,
+        validado: user.validado
+      },
+      redirect: {
+        to: redirectTo,
+        userType: user.tipo_usuario
       }
     });
   } catch (e) {

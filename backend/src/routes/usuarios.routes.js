@@ -5,7 +5,9 @@ import {
   updateProfile,
   validateUpdateProfile,
   changePassword,
-  validateChangePassword
+  validateChangePassword,
+  deleteAccount,
+  validateDeleteAccount
 } from '../controllers/usuarios.controller.js';
 import {
   register,
@@ -23,6 +25,7 @@ router.post('/login', login);
 router.get('/profile', authRequired, getProfile);
 router.put('/profile', authRequired, validateUpdateProfile, updateProfile);
 router.put('/contrasena', authRequired, validateChangePassword, changePassword);
+router.delete('/delete-account', authRequired, validateDeleteAccount, deleteAccount);
 router.get('/', authRequired, listarUsuarios);
 
 export default router;

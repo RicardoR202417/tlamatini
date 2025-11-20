@@ -1,8 +1,7 @@
-// src/models/Profesional.js
 import { DataTypes } from 'sequelize';
-import sequelize from '../config/database.js';
+import { sequelize } from '../config/database.js';
 
-const Profesional = sequelize.define('Profesional', {
+export const Profesional = sequelize.define('profesionales', {
   id_profesional: {
     type: DataTypes.INTEGER,
     primaryKey: true,
@@ -14,11 +13,11 @@ const Profesional = sequelize.define('Profesional', {
   },
   especialidad: {
     type: DataTypes.STRING(100),
-    allowNull: false
+    allowNull: true // opcional al inicio
   },
   cedula_profesional: {
     type: DataTypes.STRING(50),
-    allowNull: false
+    allowNull: true // opcional al inicio
   },
   documento_url: {
     type: DataTypes.STRING(255),
@@ -28,5 +27,3 @@ const Profesional = sequelize.define('Profesional', {
   tableName: 'profesionales',
   timestamps: false
 });
-
-export default Profesional;

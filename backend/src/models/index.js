@@ -5,9 +5,9 @@ import sequelize, { testConnection, dbHealthCheck } from '../config/database.js'
 
 // Modelos
 export { Usuario } from './Usuario.js';           // asume export nombrado en Usuario.js
+export { Profesional } from './Profesional.js';   // export nombrado
 import Cita from './Cita.js';
 import Consulta from './Consulta.js';
-import Profesional from './Profesional.js';
 import Donacion from './Donacion.js';
 import Factura from './Factura.js';
 import Actividad from './Actividad.js';
@@ -17,7 +17,6 @@ import MensajeContacto from './MensajeContacto.js';
 // Exporta modelos por si los necesitas individualmente
 export { default as Cita } from './Cita.js';
 export { default as Consulta } from './Consulta.js';
-export { default as Profesional } from './Profesional.js';
 export { default as Donacion } from './Donacion.js';
 export { default as Factura } from './Factura.js';
 export { default as Actividad } from './Actividad.js';
@@ -26,6 +25,11 @@ export { default as MensajeContacto } from './MensajeContacto.js';
 
 // ===== Asociaciones =====
 import { Usuario } from './Usuario.js';
+import { Profesional } from './Profesional.js';
+
+// Asociación Usuario-Profesional (1:1)
+Usuario.hasOne(Profesional, { foreignKey: 'id_profesional', as: 'profesional' });
+Profesional.belongsTo(Usuario, { foreignKey: 'id_profesional', as: 'usuario' });
 
 // Asociaciones existentes (descomenta si las necesitas)
 // Cita.belongsTo(Usuario, { foreignKey: 'id_beneficiario', as: 'beneficiario' });
