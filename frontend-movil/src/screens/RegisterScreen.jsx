@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { StatusBar, Alert, ActivityIndicator, Text } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
+import { StatusBar, Alert, ActivityIndicator, Text, View, TouchableOpacity } from 'react-native';
 import ApiService from '../api/ApiService';
 import StorageService from '../services/StorageService';
 import SuccessModal from '../components/SuccessModal';
@@ -15,7 +14,6 @@ import {
   InputContainer,
   InputLabel,
   TextInput,
-  PickerContainer,
   ButtonContainer,
   PrimaryButton,
   PrimaryButtonText,
@@ -263,22 +261,119 @@ const RegisterScreen = ({ navigation }) => {
             • <Text style={{ fontWeight: 'bold', color: '#3EAB37' }}>Beneficiario:</Text> Participa en programas de la asociación y agenda citas con profesionales.{'\n'}
             • <Text style={{ fontWeight: 'bold', color: '#3EAB37' }}>Profesional:</Text> Ofrece servicios especializados y agenda citas con beneficiarios.
           </Text>
-          <PickerContainer>
-            <Picker
-              selectedValue={formData.tipo_usuario}
-              onValueChange={(value) => updateField('tipo_usuario', value)}
-              style={{ color: '#333' }}
+          
+          {/* Selector personalizado con botones */}
+          <View style={{ marginBottom: 10 }}>
+            <TouchableOpacity
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: formData.tipo_usuario === 'beneficiario' ? '#3EAB37' : 'white',
+                borderWidth: 2,
+                borderColor: formData.tipo_usuario === 'beneficiario' ? '#3EAB37' : '#ddd',
+                borderRadius: 12,
+                padding: 15,
+                marginBottom: 10,
+                elevation: 2,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 4,
+              }}
+              onPress={() => updateField('tipo_usuario', 'beneficiario')}
             >
-              <Picker.Item 
-                label="👥 Beneficiario" 
-                value="beneficiario" 
-              />
-              <Picker.Item 
-                label="💼 Profesional" 
-                value="profesional" 
-              />
-            </Picker>
-          </PickerContainer>
+              <Text style={{ 
+                fontSize: 24, 
+                marginRight: 12,
+                color: formData.tipo_usuario === 'beneficiario' ? 'white' : '#3EAB37'
+              }}>
+                👥
+              </Text>
+              <View style={{ flex: 1 }}>
+                <Text style={{ 
+                  fontSize: 16, 
+                  fontWeight: 'bold', 
+                  color: formData.tipo_usuario === 'beneficiario' ? 'white' : '#333',
+                  marginBottom: 4
+                }}>
+                  Beneficiario
+                </Text>
+                <Text style={{ 
+                  fontSize: 13, 
+                  color: formData.tipo_usuario === 'beneficiario' ? '#f0f0f0' : '#666'
+                }}>
+                  Participa en programas y agenda citas
+                </Text>
+              </View>
+              {formData.tipo_usuario === 'beneficiario' && (
+                <View style={{
+                  width: 24,
+                  height: 24,
+                  borderRadius: 12,
+                  backgroundColor: 'white',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <Text style={{ color: '#3EAB37', fontSize: 16, fontWeight: 'bold' }}>✓</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: formData.tipo_usuario === 'profesional' ? '#3EAB37' : 'white',
+                borderWidth: 2,
+                borderColor: formData.tipo_usuario === 'profesional' ? '#3EAB37' : '#ddd',
+                borderRadius: 12,
+                padding: 15,
+                elevation: 2,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 4,
+              }}
+              onPress={() => updateField('tipo_usuario', 'profesional')}
+            >
+              <Text style={{ 
+                fontSize: 24, 
+                marginRight: 12,
+                color: formData.tipo_usuario === 'profesional' ? 'white' : '#3EAB37'
+              }}>
+                💼
+              </Text>
+              <View style={{ flex: 1 }}>
+                <Text style={{ 
+                  fontSize: 16, 
+                  fontWeight: 'bold', 
+                  color: formData.tipo_usuario === 'profesional' ? 'white' : '#333',
+                  marginBottom: 4
+                }}>
+                  Profesional
+                </Text>
+                <Text style={{ 
+                  fontSize: 13, 
+                  color: formData.tipo_usuario === 'profesional' ? '#f0f0f0' : '#666'
+                }}>
+                  Ofrece servicios especializados
+                </Text>
+              </View>
+              {formData.tipo_usuario === 'profesional' && (
+                <View style={{
+                  width: 24,
+                  height: 24,
+                  borderRadius: 12,
+                  backgroundColor: 'white',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <Text style={{ color: '#3EAB37', fontSize: 16, fontWeight: 'bold' }}>✓</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          </View>
+          
           {errors.tipo_usuario && <ErrorMessage>{errors.tipo_usuario}</ErrorMessage>}
         </InputContainer>
 

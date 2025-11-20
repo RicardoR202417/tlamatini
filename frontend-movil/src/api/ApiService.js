@@ -46,7 +46,7 @@ class ApiService {
 
   // Registro de usuario
   async register(userData) {
-    return this.makeRequest('/api/auth/register', {
+    return this.makeRequest('/api/usuarios/register', {
       method: 'POST',
       body: JSON.stringify({
         nombres: userData.nombres,
@@ -60,7 +60,7 @@ class ApiService {
 
   // Login de usuario
   async login(credentials) {
-    return this.makeRequest('/api/auth/login', {
+    return this.makeRequest('/api/usuarios/login', {
       method: 'POST',
       body: JSON.stringify({
         correo: credentials.correo,
@@ -78,6 +78,11 @@ class ApiService {
         tipo_usuario: tipoUsuario,
       }),
     });
+  }
+
+  // Login con Google (alias para compatibilidad)
+  async loginWithGoogle(idToken, tipoUsuario = 'beneficiario') {
+    return this.googleSignIn(idToken, tipoUsuario);
   }
 
   // Obtener información del usuario autenticado
@@ -129,6 +134,35 @@ class ApiService {
       headers: {
         Authorization: `Bearer ${token}`,
       },
+    });
+  }
+
+  // Cambiar contraseña
+  async changePassword(passwordData, token) {
+    return this.makeRequest('/api/usuarios/contrasena', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        password_actual: passwordData.password_actual,
+        nueva_password: passwordData.nueva_password
+      }),
+    });
+  }
+
+  // Eliminar cuenta (soft delete)
+  async deleteAccount(token) {
+    return this.makeRequest('/api/usuarios/delete-account', {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        confirmacion: 'ELIMINAR'
+      }),
     });
   }
 
