@@ -112,8 +112,12 @@ const EditarPerfilScreen = ({ navigation }) => {
     fecha_nacimiento: '',
     genero: '',
     celular: '',
-    direccion: ''
+    direccion: '',
+    // Campos profesionales
+    especialidad: '',
+    cedula_profesional: ''
   });
+  const [userType, setUserType] = useState('beneficiario');
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -139,12 +143,16 @@ const EditarPerfilScreen = ({ navigation }) => {
           fecha_nacimiento: userData.fecha_nacimiento || '',
           genero: userData.genero || '',
           celular: userData.celular || '',
-          direccion: userData.direccion || ''
+          direccion: userData.direccion || '',
+          // Campos profesionales
+          especialidad: userData.profesional?.especialidad || '',
+          cedula_profesional: userData.profesional?.cedula_profesional || ''
         };
 
         console.log('Setting formData to:', newFormData);
 
         setFormData(newFormData);
+        setUserType(userData.tipo_usuario || 'beneficiario');
       }
       console.log('=== END LOAD USER DATA DEBUG ===');
     } catch (error) {
@@ -176,6 +184,17 @@ const EditarPerfilScreen = ({ navigation }) => {
 
     if (formData.direccion && formData.direccion.length > 500) {
       newErrors.direccion = 'La dirección es muy larga (máximo 500 caracteres)';
+    }
+
+    // Validaciones para profesionales
+    if (userType === 'profesional') {
+      if (formData.especialidad && formData.especialidad.length > 200) {
+        newErrors.especialidad = 'La especialidad es muy larga (máximo 200 caracteres)';
+      }
+
+      if (formData.cedula_profesional && !/^\d{6,10}$/.test(formData.cedula_profesional)) {
+        newErrors.cedula_profesional = 'La cédula debe tener entre 6 y 10 dígitos';
+      }
     }
 
     setErrors(newErrors);
@@ -225,6 +244,21 @@ const EditarPerfilScreen = ({ navigation }) => {
         updateData.direccion = formData.direccion.trim();
       } else {
         updateData.direccion = null;
+      }
+
+      // Campos profesionales - Solo para profesionales
+      if (userType === 'profesional') {
+        if (formData.especialidad && formData.especialidad.trim()) {
+          updateData.especialidad = formData.especialidad.trim();
+        } else {
+          updateData.especialidad = null;
+        }
+        
+        if (formData.cedula_profesional && formData.cedula_profesional.trim()) {
+          updateData.cedula_profesional = formData.cedula_profesional.trim();
+        } else {
+          updateData.cedula_profesional = null;
+        }
       }
 
       const response = await ApiService.updateProfile(updateData, token);
@@ -439,6 +473,48 @@ const EditarPerfilScreen = ({ navigation }) => {
           {errors.direccion && <ErrorMessage>{errors.direccion}</ErrorMessage>}
         </InputContainer>
 
+        {/* Campos profesionales - Solo para profesionales */}
+        {userType === 'profesional' && (
+          <>
+            <InputContainer>
+              <InputLabel>Especialidad Profesional</InputLabel>
+              <Text style={{ 
+                fontSize: 12, 
+                color: '#888', 
+                marginBottom: 8 
+              }}>
+                Tu área de especialización (psicología, trabajo social, etc.)
+              </Text>
+              <TextInput
+                placeholder="Ej: Psicología Clínica, Trabajo Social"
+                value={formData.especialidad}
+                onChangeText={(value) => updateField('especialidad', value)}
+                maxLength={200}
+              />
+              {errors.especialidad && <ErrorMessage>{errors.especialidad}</ErrorMessage>}
+            </InputContainer>
+
+            <InputContainer>
+              <InputLabel>Cédula Profesional</InputLabel>
+              <Text style={{ 
+                fontSize: 12, 
+                color: '#888', 
+                marginBottom: 8 
+              }}>
+                Tu número de cédula profesional (solo números)
+              </Text>
+              <TextInput
+                placeholder="1234567890"
+                value={formData.cedula_profesional}
+                onChangeText={(value) => updateField('cedula_profesional', value)}
+                keyboardType="numeric"
+                maxLength={10}
+              />
+              {errors.cedula_profesional && <ErrorMessage>{errors.cedula_profesional}</ErrorMessage>}
+            </InputContainer>
+          </>
+        )}
+
         <ButtonContainer>
           <PrimaryButton 
             onPress={handleUpdateProfile}
@@ -465,7 +541,10 @@ const EditarPerfilScreen = ({ navigation }) => {
           paddingHorizontal: 20
         }}>
           Los campos marcados con * son obligatorios.{'\n'}
-          Tu información está protegida y solo será visible para los profesionales cuando agendes una cita.
+          {userType === 'profesional' ? 
+            'Como profesional, tu especialidad y cédula ayudan a los beneficiarios a conocer tu experiencia.' :
+            'Tu información está protegida y solo será visible para los profesionales cuando agendes una cita.'
+          }
         </Text>
       </ContentContainer>
 

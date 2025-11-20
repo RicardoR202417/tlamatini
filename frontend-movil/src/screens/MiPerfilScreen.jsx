@@ -365,6 +365,34 @@ const MiPerfilScreen = ({ navigation }) => {
             </ServiceCard>
           </SectionContainer>
 
+          {/* Información profesional - Solo para profesionales */}
+          {userData?.tipo_usuario === 'profesional' && userData?.profesional && (
+            <SectionContainer>
+              <SectionTitle>Información Profesional</SectionTitle>
+              <ServiceCard>
+                <InfoRow>
+                  <InfoLabel>Especialidad:</InfoLabel>
+                  <InfoValue>{userData?.profesional?.especialidad || 'Sin definir'}</InfoValue>
+                </InfoRow>
+                
+                <InfoRow>
+                  <InfoLabel>Cédula Profesional:</InfoLabel>
+                  <InfoValue>{userData?.profesional?.cedula_profesional || 'Sin definir'}</InfoValue>
+                </InfoRow>
+                
+                <InfoRow style={{ borderBottomWidth: 0 }}>
+                  <InfoLabel>Estado de Documentos:</InfoLabel>
+                  <InfoValue style={{ 
+                    color: userData?.profesional?.documento_url ? '#3EAB37' : '#e53e3e',
+                    fontWeight: 'bold'
+                  }}>
+                    {userData?.profesional?.documento_url ? 'Cargados' : 'Pendientes'}
+                  </InfoValue>
+                </InfoRow>
+              </ServiceCard>
+            </SectionContainer>
+          )}
+
           {/* Configuraciones de cuenta */}
           <SectionContainer>
             <SectionTitle>Configuración de Cuenta</SectionTitle>

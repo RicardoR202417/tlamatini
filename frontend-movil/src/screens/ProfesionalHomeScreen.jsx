@@ -1,206 +1,235 @@
-import React, { useContext } from 'react';
-import { StatusBar } from 'react-native';
-import styled from 'styled-components/native';
-import { UserContext } from '../context/UserContext';
-
-const Container = styled.SafeAreaView`
-  flex: 1;
-  background-color: #f9fafb;
-`;
-
-const ScrollContainer = styled.ScrollView`
-  flex: 1;
-  padding: 20px;
-`;
-
-const Header = styled.View`
-  margin-bottom: 20px;
-`;
-
-const BackButton = styled.TouchableOpacity`
-  flex-direction: row;
-  align-items: center;
-  margin-bottom: 10px;
-`;
-
-const BackIcon = styled.Text`
-  font-size: 20px;
-  color: #4b5563;
-  margin-right: 6px;
-`;
-
-const BackText = styled.Text`
-  font-size: 14px;
-  color: #4b5563;
-`;
-
-const WelcomeText = styled.Text`
-  font-size: 22px;
-  font-weight: bold;
-  color: #111827;
-  margin-bottom: 4px;
-`;
-
-const SubText = styled.Text`
-  font-size: 14px;
-  color: #6b7280;
-`;
-
-const CardGrid = styled.View`
-  margin-top: 10px;
-`;
-
-const CardRow = styled.View`
-  flex-direction: row;
-  justify-content: space-between;
-  margin-bottom: 16px;
-`;
-
-const Card = styled.TouchableOpacity`
-  flex: 1;
-  background-color: #ffffff;
-  border-radius: 14px;
-  padding: 16px;
-  margin-right: ${({ isLast }) => (isLast ? '0px' : '12px')};
-  shadow-color: #000;
-  shadow-offset: 0px 2px;
-  shadow-opacity: 0.08;
-  shadow-radius: 4px;
-  elevation: 2;
-`;
-
-const CardIcon = styled.Text`
-  font-size: 28px;
-  margin-bottom: 10px;
-`;
-
-const CardTitle = styled.Text`
-  font-size: 16px;
-  font-weight: 600;
-  color: #111827;
-  margin-bottom: 4px;
-`;
-
-const CardText = styled.Text`
-  font-size: 12px;
-  color: #6b7280;
-`;
-
-const SectionTitle = styled.Text`
-  font-size: 16px;
-  font-weight: 600;
-  color: #374151;
-  margin-top: 24px;
-  margin-bottom: 8px;
-`;
-
-const InfoBox = styled.View`
-  background-color: #e5f0ff;
-  padding: 14px;
-  border-radius: 12px;
-`;
-
-const InfoText = styled.Text`
-  font-size: 13px;
-  color: #1f2937;
-`;
-
-const Highlight = styled.Text`
-  font-weight: 600;
-  color: #1d4ed8;
-`;
+import React, { useState, useEffect } from 'react';
+import { StatusBar, Alert } from 'react-native';
+import StorageService from '../services/StorageService';
+import {
+  Container,
+  ScrollContainer,
+  ContentContainer,
+  HeaderContainer,
+  WelcomeText,
+  UserNameText,
+  SubtitleText,
+  SectionContainer,
+  SectionTitle,
+  SectionDescription,
+  ServiceCard,
+  ServiceIcon,
+  ServiceTitle,
+  ServiceDescription,
+  QuickActionsContainer,
+  QuickActionButton,
+  QuickActionIcon,
+  QuickActionText,
+  PrimaryButton,
+  PrimaryButtonText,
+  Divider,
+  StatusIndicator,
+  StatusText
+} from '../styles/BeneficiarioHome.styles';
 
 const ProfesionalHomeScreen = ({ navigation }) => {
-  const { user } = useContext(UserContext);
+  const [userData, setUserData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const firstName = user?.nombres ? user.nombres.split(' ')[0] : 'Profesional';
+  useEffect(() => {
+    loadUserData();
+  }, []);
 
-  const goToAgenda = () => {
-    navigation.navigate('MisCitas');
+  const loadUserData = async () => {
+    try {
+      const user = await StorageService.getUserData();
+      if (user && user.tipo_usuario === 'profesional') {
+        setUserData(user);
+      } else {
+        // Si no es profesional o no hay datos, redirigir al login
+        Alert.alert('Error', 'Acceso no autorizado');
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Welcome' }],
+        });
+      }
+    } catch (error) {
+      console.error('Error loading user data:', error);
+      Alert.alert('Error', 'No se pudieron cargar los datos del usuario');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const goToHistorialConsultas = () => {
-    navigation.navigate('HistorialConsultas');
+  // Secciones principales para profesionales
+  const secciones = [
+    {
+      id: 'mi-agenda',
+      icon: '📅',
+      title: 'Mi Agenda',
+      description: 'Citas programadas y consultas pendientes',
+      subtitle: 'Gestiona tus citas con beneficiarios',
+      color: '#3EAB37'
+    },
+    {
+      id: 'historial-consultas',
+      icon: '📋',
+      title: 'Historial de Consultas',
+      description: 'Registro completo de sesiones realizadas',
+      subtitle: 'Consulta el historial de tus pacientes',
+      color: '#2563eb'
+    },
+    {
+      id: 'mis-servicios',
+      icon: '🩺',
+      title: 'Mis Servicios Profesionales',
+      description: 'Administra los servicios que ofreces',
+      subtitle: 'Configura tu perfil profesional',
+      color: '#7c3aed'
+    },
+    {
+      id: 'actividades-voluntariados',
+      icon: '🤝',
+      title: 'Actividades y Voluntariados',
+      description: 'Participa en programas comunitarios',
+      subtitle: 'Únete a actividades sociales',
+      color: '#059669'
+    },
+    {
+      id: 'donaciones',
+      icon: '🎁',
+      title: 'Apóyanos / Donaciones',
+      description: 'Contribuye con la organización',
+      subtitle: 'Ayúdanos a ayudar a más personas',
+      color: '#dc2626'
+    }
+  ];
+
+  // Navegación a secciones
+  const handleSeccionPress = (seccion) => {
+    switch (seccion.id) {
+      case 'mi-agenda':
+        navigation.navigate('MisCitas');
+        break;
+      
+      case 'historial-consultas':
+        navigation.navigate('HistorialConsultas');
+        break;
+      
+      case 'mis-servicios':
+        navigation.navigate('ServiciosProfesionales');
+        break;
+      
+      case 'actividades-voluntariados':
+        navigation.navigate('Actividades');
+        break;
+      
+      case 'donaciones':
+        navigation.navigate('Donaciones');
+        break;
+      
+      default:
+        Alert.alert('Error', 'Sección no encontrada');
+    }
   };
 
-  const goToServicios = () => {
-    navigation.navigate('ServiciosProfesionales');
-  };
-
-  const goToActividades = () => {
-    navigation.navigate('Actividades');
-  };
+  if (loading) {
+    return (
+      <Container>
+        <StatusBar backgroundColor="#6366f1" barStyle="light-content" />
+        <ContentContainer>
+          <WelcomeText>Cargando...</WelcomeText>
+        </ContentContainer>
+      </Container>
+    );
+  }
 
   return (
     <Container>
-      <StatusBar barStyle="dark-content" backgroundColor="#f9fafb" />
+      <StatusBar backgroundColor="#6366f1" barStyle="light-content" />
+      
       <ScrollContainer showsVerticalScrollIndicator={false}>
-        {/* Header / Bienvenida */}
-        <Header>
-          {navigation.canGoBack() && (
-            <BackButton onPress={() => navigation.goBack()}>
-              <BackIcon>←</BackIcon>
-              <BackText>Volver</BackText>
-            </BackButton>
-          )}
+        {/* Header con bienvenida personalizada */}
+        <HeaderContainer style={{ backgroundColor: '#6366f1' }}>
+          <WelcomeText>¡Hola Profesional!</WelcomeText>
+          <UserNameText>{userData?.nombres} {userData?.apellidos}</UserNameText>
+          <SubtitleText>
+            Administra tus servicios profesionales, gestiona tu agenda y participa en actividades comunitarias.
+          </SubtitleText>
+        </HeaderContainer>
 
-          <WelcomeText>Hola, {firstName} 👋</WelcomeText>
-          <SubText>
-            Este es tu panel principal. Accede rápido a tu agenda, consultas,
-            servicios y actividades sociales.
-          </SubText>
-        </Header>
+        <ContentContainer>
+          {/* Acciones rápidas */}
+          <QuickActionsContainer>
+            <QuickActionButton onPress={() => navigation.navigate('MiPerfil')}>
+              <QuickActionIcon>👤</QuickActionIcon>
+              <QuickActionText>Mi Perfil</QuickActionText>
+            </QuickActionButton>
+            
+            <QuickActionButton onPress={() => navigation.navigate('MisCitas')}>
+              <QuickActionIcon>📅</QuickActionIcon>
+              <QuickActionText>Mi Agenda</QuickActionText>
+            </QuickActionButton>
 
-        {/* Accesos rápidos principales */}
-        <CardGrid>
-          <CardRow>
-            <Card onPress={goToAgenda}>
-              <CardIcon>📆</CardIcon>
-              <CardTitle>Mi agenda</CardTitle>
-              <CardText>
-                Revisa tus citas confirmadas y próximas sesiones.
-              </CardText>
-            </Card>
+            <QuickActionButton onPress={() => navigation.navigate('HistorialConsultas')}>
+              <QuickActionIcon>📋</QuickActionIcon>
+              <QuickActionText>Consultas</QuickActionText>
+            </QuickActionButton>
 
-            <Card onPress={goToHistorialConsultas} isLast>
-              <CardIcon>📋</CardIcon>
-              <CardTitle>Historial de consultas</CardTitle>
-              <CardText>
-                Consulta el registro de sesiones realizadas con beneficiarios.
-              </CardText>
-            </Card>
-          </CardRow>
+            <QuickActionButton onPress={() => navigation.navigate('MisInscripciones')}>
+              <QuickActionIcon>📑</QuickActionIcon>
+              <QuickActionText>Mis Actividades</QuickActionText>
+            </QuickActionButton>
 
-          <CardRow>
-            <Card onPress={goToServicios}>
-              <CardIcon>🩺</CardIcon>
-              <CardTitle>Mis servicios</CardTitle>
-              <CardText>
-                Gestiona los servicios profesionales que ofreces en Tlamatini.
-              </CardText>
-            </Card>
+            <QuickActionButton onPress={() => navigation.navigate('Avisos')}>
+              <QuickActionIcon>🔔</QuickActionIcon>
+              <QuickActionText>Avisos</QuickActionText>
+            </QuickActionButton>
 
-            <Card onPress={goToActividades} isLast>
-              <CardIcon>🤝</CardIcon>
-              <CardTitle>Actividades / voluntariados</CardTitle>
-              <CardText>
-                Explora actividades sociales y voluntariados disponibles.
-              </CardText>
-            </Card>
-          </CardRow>
-        </CardGrid>
+            <QuickActionButton onPress={() => navigation.navigate('Contacto')}>
+              <QuickActionIcon>✉️</QuickActionIcon>
+              <QuickActionText>Contacto</QuickActionText>
+            </QuickActionButton>
+          </QuickActionsContainer>
 
-        {/* Sección informativa */}
-        <SectionTitle>Resumen rápido</SectionTitle>
-        <InfoBox>
-          <InfoText>
-            Desde aquí podrás administrar tu{' '}
-            <Highlight>agenda de citas</Highlight>, revisar el{' '}
-            <Highlight>historial de consultas</Highlight>, configurar tus{' '}
-            <Highlight>servicios profesionales</Highlight> y participar en{' '}
-            <Highlight>actividades comunitarias</Highlight>.
-          </InfoText>
-        </InfoBox>
+          {/* Secciones principales */}
+          <SectionContainer>
+            <SectionTitle>Panel Profesional</SectionTitle>
+            <SectionDescription>
+              Accede a todas las herramientas para gestionar tu práctica profesional en TLAMATINI.
+            </SectionDescription>
+            
+            {secciones.map((seccion) => (
+              <ServiceCard 
+                key={seccion.id} 
+                onPress={() => handleSeccionPress(seccion)}
+              >
+                <ServiceIcon>{seccion.icon}</ServiceIcon>
+                <ServiceTitle>{seccion.title}</ServiceTitle>
+                <ServiceDescription>{seccion.description}</ServiceDescription>
+                <SectionDescription style={{ marginTop: 8, marginBottom: 0, fontStyle: 'italic' }}>
+                  {seccion.subtitle}
+                </SectionDescription>
+                <StatusIndicator color={seccion.color}>
+                  <StatusText>Explorar</StatusText>
+                </StatusIndicator>
+              </ServiceCard>
+            ))}
+          </SectionContainer>
+
+          <Divider />
+
+          {/* Información profesional */}
+          <SectionContainer>
+            <SectionTitle>Información Importante</SectionTitle>
+            <SectionDescription style={{ textAlign: 'center', lineHeight: 20 }}>
+              Como profesional de TLAMATINI, tu labor es fundamental para brindar apoyo de calidad a nuestros beneficiarios. 
+              {'\n\n'}Recuerda mantener tu perfil profesional actualizado y cumplir con los horarios de atención establecidos.
+            </SectionDescription>
+          </SectionContainer>
+
+          {/* Botón de navegación principal */}
+          <SectionContainer>
+            <PrimaryButton onPress={() => Alert.alert('Próximamente', 'Centro de recursos profesionales será implementado')}>
+              <PrimaryButtonText>Centro de Recursos Profesionales</PrimaryButtonText>
+            </PrimaryButton>
+          </SectionContainer>
+        </ContentContainer>
       </ScrollContainer>
     </Container>
   );
