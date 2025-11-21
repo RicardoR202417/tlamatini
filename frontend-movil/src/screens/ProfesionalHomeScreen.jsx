@@ -155,55 +155,39 @@ const ProfesionalHomeScreen = ({ navigation }) => {
         </HeaderContainer>
 
         <ContentContainer>
-          {/* Acciones rápidas */}
-<<<<<<< HEAD
-          <QuickActionsContainer>
-            <QuickActionButton onPress={() => navigation.navigate('MiPerfil')}>
-              <QuickActionIcon>👤</QuickActionIcon>
-              <QuickActionText>Mi Perfil</QuickActionText>
-            </QuickActionButton>
-            
-            <QuickActionButton
-              // 👇 aquí también lo mandamos a la pantalla de citas del profesional
-              onPress={() => navigation.navigate('CitasPendientesProfesional')}
-            >
-              <QuickActionIcon>📅</QuickActionIcon>
-              <QuickActionText>Mi Agenda</QuickActionText>
-            </QuickActionButton>
-=======
-          <QuickActionsContainer style={{ flexDirection: 'column' }}>
-            {/* Primera fila - 3 botones */}
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 }}>
-              <QuickActionButton style={{ width: '31%' }} onPress={() => navigation.navigate('MiPerfil')}>
-                <QuickActionIcon>👤</QuickActionIcon>
-                <QuickActionText>Mi Perfil</QuickActionText>
-              </QuickActionButton>
-              
-              <QuickActionButton style={{ width: '31%' }} onPress={() => navigation.navigate('MisCitas')}>
-                <QuickActionIcon>📅</QuickActionIcon>
-                <QuickActionText>Mi Agenda</QuickActionText>
-              </QuickActionButton>
->>>>>>> 948f9c500233500c81fd37398de74f76150664ba
+{/* Acciones rápidas */}
+<QuickActionsContainer style={{ flexDirection: 'column' }}>
+  {/* Primera fila - 3 botones */}
+  <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 }}>
+    <QuickActionButton style={{ width: '31%' }} onPress={() => navigation.navigate('MiPerfil')}>
+      <QuickActionIcon>👤</QuickActionIcon>
+      <QuickActionText>Mi Perfil</QuickActionText>
+    </QuickActionButton>
+    
+    <QuickActionButton style={{ width: '31%' }} onPress={() => navigation.navigate('CitasPendientesProfesional')}>
+      <QuickActionIcon>📅</QuickActionIcon>
+      <QuickActionText>Mi Agenda</QuickActionText>
+    </QuickActionButton>
 
-              <QuickActionButton style={{ width: '31%' }} onPress={() => navigation.navigate('HistorialConsultas')}>
-                <QuickActionIcon>📋</QuickActionIcon>
-                <QuickActionText>Consultas</QuickActionText>
-              </QuickActionButton>
-            </View>
+    <QuickActionButton style={{ width: '31%' }} onPress={() => navigation.navigate('HistorialConsultas')}>
+      <QuickActionIcon>📋</QuickActionIcon>
+      <QuickActionText>Consultas</QuickActionText>
+    </QuickActionButton>
+  </View>
 
-            {/* Segunda fila - 2 botones */}
-            <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
-              <QuickActionButton style={{ width: '48%' }} onPress={() => navigation.navigate('MisInscripciones')}>
-                <QuickActionIcon>📑</QuickActionIcon>
-                <QuickActionText>Mis Actividades</QuickActionText>
-              </QuickActionButton>
+  {/* Segunda fila - 2 botones */}
+  <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
+    <QuickActionButton style={{ width: '48%' }} onPress={() => navigation.navigate('MisInscripciones')}>
+      <QuickActionIcon>📑</QuickActionIcon>
+      <QuickActionText>Mis Actividades</QuickActionText>
+    </QuickActionButton>
 
-              <QuickActionButton style={{ width: '48%' }} onPress={() => navigation.navigate('Avisos')}>
-                <QuickActionIcon>🔔</QuickActionIcon>
-                <QuickActionText>Avisos</QuickActionText>
-              </QuickActionButton>
-            </View>
-          </QuickActionsContainer>
+    <QuickActionButton style={{ width: '48%' }} onPress={() => navigation.navigate('Avisos')}>
+      <QuickActionIcon>🔔</QuickActionIcon>
+      <QuickActionText>Avisos</QuickActionText>
+    </QuickActionButton>
+  </View>
+</QuickActionsContainer>
 
           {/* Secciones principales */}
           <SectionContainer>

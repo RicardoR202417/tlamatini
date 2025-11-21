@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 // src/screens/MisCitasScreen.jsx
 import React, { useState, useEffect, useMemo } from 'react';
 import { StatusBar, Alert, ActivityIndicator } from 'react-native';
@@ -6,12 +5,7 @@ import styled from 'styled-components/native';
 
 import ApiService from '../api/ApiService';
 import StorageService from '../services/StorageService';
-
-=======
-import React, { useState, useEffect } from 'react';
-import { StatusBar, Alert } from 'react-native';
 import StandardHeader from '../components/StandardHeader';
->>>>>>> 948f9c500233500c81fd37398de74f76150664ba
 import {
   Container,
   ScrollContainer,
@@ -306,46 +300,11 @@ const MisCitasScreen = ({ navigation, route }) => {
     );
   };
 
-  if (loading) {
-    return (
-      <Container>
-        <StatusBar backgroundColor="#059669" barStyle="light-content" />
-        <BackButton onPress={goBack}>
-          <BackIcon>←</BackIcon>
-        </BackButton>
-
-        <ScrollContainer showsVerticalScrollIndicator={false}>
-          <HeaderContainer style={{ backgroundColor: '#059669' }}>
-            <WelcomeText>Mis Citas</WelcomeText>
-            <SubtitleText>
-              Gestiona y revisa todas tus citas médicas y de servicios profesionales.
-            </SubtitleText>
-          </HeaderContainer>
-
-          <LoadingWrapper>
-            <ActivityIndicator size="large" color="#059669" />
-            <LoadingText>Cargando tus citas...</LoadingText>
-          </LoadingWrapper>
-        </ScrollContainer>
-      </Container>
-    );
-  }
-
+if (loading) {
   return (
-<<<<<<< HEAD
     <Container>
       <StatusBar backgroundColor="#059669" barStyle="light-content" />
-
-      {/* Botón de regreso */}
-      <BackButton onPress={goBack}>
-        <BackIcon>←</BackIcon>
-      </BackButton>
-
-=======
-    <Container>      
->>>>>>> 948f9c500233500c81fd37398de74f76150664ba
       <ScrollContainer showsVerticalScrollIndicator={false}>
-        {/* Header estándar con botón de regreso */}
         <StandardHeader
           backgroundColor="#059669"
           title="Mis Citas"
@@ -353,38 +312,56 @@ const MisCitasScreen = ({ navigation, route }) => {
           showBackButton={true}
           onBackPress={goBack}
         />
+        <LoadingWrapper>
+          <ActivityIndicator size="large" color="#059669" />
+          <LoadingText>Cargando tus citas...</LoadingText>
+        </LoadingWrapper>
+      </ScrollContainer>
+    </Container>
+  );
+}
 
-        <ContentContainer>
-          {/* Filtros */}
-          <SectionContainer>
-            <SectionTitle>Filtrar Citas</SectionTitle>
-            <FilterContainer>
-              <FilterButton
-                active={activeFilter === 'todas'}
-                onPress={() => setActiveFilter('todas')}
-              >
-                <FilterText active={activeFilter === 'todas'}>Todas</FilterText>
-              </FilterButton>
+return (
+  <Container>
+    <StatusBar backgroundColor="#059669" barStyle="light-content" />
+    <ScrollContainer showsVerticalScrollIndicator={false}>
+      {/* Header estándar con botón de regreso */}
+      <StandardHeader
+        backgroundColor="#059669"
+        title="Mis Citas"
+        description="Gestiona y revisa todas tus citas médicas y de servicios profesionales."
+        showBackButton={true}
+        onBackPress={goBack}
+      />
+      <ContentContainer>
+        <SectionContainer>
+          <FilterContainer>
+            <FilterButton
+              active={activeFilter === 'todas'}
+              onPress={() => setActiveFilter('todas')}
+            >
+              <FilterText active={activeFilter === 'todas'}>Todas</FilterText>
+            </FilterButton>
 
-              <FilterButton
-                active={activeFilter === 'pendientes'}
-                onPress={() => setActiveFilter('pendientes')}
-              >
-                <FilterText active={activeFilter === 'pendientes'}>
-                  Próximas
-                </FilterText>
-              </FilterButton>
+            <FilterButton
+              active={activeFilter === 'pendientes'}
+              onPress={() => setActiveFilter('pendientes')}
+            >
+              <FilterText active={activeFilter === 'pendientes'}>
+                Próximas
+              </FilterText>
+            </FilterButton>
 
-              <FilterButton
-                active={activeFilter === 'completadas'}
-                onPress={() => setActiveFilter('completadas')}
-              >
-                <FilterText active={activeFilter === 'completadas'}>
-                  Historial
-                </FilterText>
-              </FilterButton>
-            </FilterContainer>
-          </SectionContainer>
+            <FilterButton
+              active={activeFilter === 'completadas'}
+              onPress={() => setActiveFilter('completadas')}
+            >
+              <FilterText active={activeFilter === 'completadas'}>
+                Historial
+              </FilterText>
+            </FilterButton>
+          </FilterContainer>
+        </SectionContainer>
 
           {/* Lista de citas o estado vacío */}
           {filteredCitas.length > 0 ? (
