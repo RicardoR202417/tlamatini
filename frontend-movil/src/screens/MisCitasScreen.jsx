@@ -1,6 +1,17 @@
+<<<<<<< HEAD
+// src/screens/MisCitasScreen.jsx
+import React, { useState, useEffect, useMemo } from 'react';
+import { StatusBar, Alert, ActivityIndicator } from 'react-native';
+import styled from 'styled-components/native';
+
+import ApiService from '../api/ApiService';
+import StorageService from '../services/StorageService';
+
+=======
 import React, { useState, useEffect } from 'react';
 import { StatusBar, Alert } from 'react-native';
 import StandardHeader from '../components/StandardHeader';
+>>>>>>> 948f9c500233500c81fd37398de74f76150664ba
 import {
   Container,
   ScrollContainer,
@@ -18,7 +29,6 @@ import {
   StatusIndicator,
   StatusText
 } from '../styles/BeneficiarioHome.styles';
-import styled from 'styled-components/native';
 
 // Estilos específicos para esta pantalla
 const BackButton = styled.TouchableOpacity`
@@ -86,7 +96,7 @@ const FilterContainer = styled.View`
 
 const FilterButton = styled.TouchableOpacity`
   flex: 1;
-  background-color: ${props => props.active ? '#059669' : 'white'};
+  background-color: ${props => (props.active ? '#059669' : 'white')};
   border: 2px solid #059669;
   border-radius: 12px;
   padding: 12px;
@@ -94,115 +104,190 @@ const FilterButton = styled.TouchableOpacity`
 `;
 
 const FilterText = styled.Text`
-  color: ${props => props.active ? 'white' : '#059669'};
+  color: ${props => (props.active ? 'white' : '#059669')};
   font-weight: bold;
   font-size: 14px;
 `;
 
-const MisCitasScreen = ({ navigation }) => {
+const LoadingWrapper = styled.View`
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+`;
+
+const LoadingText = styled.Text`
+  margin-top: 8px;
+  font-size: 14px;
+  color: #4b5563;
+`;
+
+// ====================== Helpers ======================
+
+const mapEstadoBackendToUI = (estado) => {
+  // Backend: pendiente | confirmada | cancelada | atendida
+  // UI: pendiente, confirmada, cancelada, completada
+  if (estado === 'atendida') return 'completada';
+  return estado || 'pendiente';
+};
+
+const getStatusColor = (estadoUI) => {
+  switch (estadoUI) {
+    case 'confirmada':
+      return '#059669';
+    case 'pendiente':
+      return '#d97706';
+    case 'completada':
+      return '#6b7280';
+    case 'cancelada':
+      return '#dc2626';
+    default:
+      return '#6b7280';
+  }
+};
+
+const getStatusText = (estadoUI) => {
+  switch (estadoUI) {
+    case 'confirmada':
+      return 'Confirmada';
+    case 'pendiente':
+      return 'Pendiente';
+    case 'completada':
+      return 'Completada';
+    case 'cancelada':
+      return 'Cancelada';
+    default:
+      return estadoUI;
+  }
+};
+
+const getServiceIcon = (servicio) => {
+  if (!servicio) return '📅';
+  switch (servicio.toLowerCase()) {
+    case 'psicología':
+    case 'psicologia':
+      return '🧭';
+    case 'nutrición':
+    case 'nutricion':
+      return '🍎';
+    case 'enfermería':
+    case 'enfermeria':
+      return '🩺';
+    case 'asesoría legal':
+    case 'asesoria legal':
+      return '📋';
+    default:
+      return '📅';
+  }
+};
+
+const splitFechaHora = (iso) => {
+  if (!iso || typeof iso !== 'string') return { fecha: 'Fecha por definir', hora: '' };
+
+  // si viene como "2025-11-21T10:00:00"
+  if (iso.includes('T')) {
+    const [f, h] = iso.split('T');
+    const hora = h?.slice(0, 5) || '';
+    return { fecha: f, hora };
+  }
+
+  // fallback: regresar todo como fecha
+  return { fecha: iso, hora: '' };
+};
+
+// ====================== Screen ======================
+
+const MisCitasScreen = ({ navigation, route }) => {
   const [activeFilter, setActiveFilter] = useState('todas');
-  
-  // Datos de ejemplo de citas (en futuro vendrán del backend)
-  const citasEjemplo = [
-    {
-      id: '1',
-      servicio: 'Psicología',
-      profesional: 'Dra. María González',
-      fecha: '2025-08-28',
-      hora: '10:00 AM',
-      estado: 'confirmada',
-      tipo: 'presencial',
-      ubicacion: 'Consultorio 1, Centro TLAMATINI'
-    },
-    {
-      id: '2',
-      servicio: 'Nutrición',
-      profesional: 'Lic. Carlos Ruiz',
-      fecha: '2025-08-30',
-      hora: '2:00 PM',
-      estado: 'pendiente',
-      tipo: 'virtual',
-      ubicacion: 'Videollamada'
-    },
-    {
-      id: '3',
-      servicio: 'Enfermería',
-      profesional: 'Enf. Ana López',
-      fecha: '2025-08-25',
-      hora: '9:00 AM',
-      estado: 'completada',
-      tipo: 'presencial',
-      ubicacion: 'Consultorio 2, Centro TLAMATINI'
-    }
-  ];
-
   const [citas, setCitas] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [beneficiarioId, setBeneficiarioId] = useState(
+    route?.params?.beneficiarioId || null
+  );
 
+  // 1. Cargar usuario (si no viene por params) y luego citas
   useEffect(() => {
-    // Simular carga de citas (en futuro será llamada a API)
-    loadCitas();
+    const init = async () => {
+      try {
+        setLoading(true);
+
+        let id = beneficiarioId;
+        if (!id) {
+          const user = await StorageService.getUserData?.();
+          id = user?.id_usuario;
+          setBeneficiarioId(id);
+        }
+
+        if (!id) {
+          Alert.alert(
+            'Sesión',
+            'No se pudo obtener el usuario. Vuelve a iniciar sesión.'
+          );
+          setLoading(false);
+          return;
+        }
+
+        const data = await ApiService.getCitasBeneficiario(id);
+
+        // mapeo a modelo de la UI
+        const mapped = (Array.isArray(data) ? data : []).map((cita) => {
+          const estadoUI = mapEstadoBackendToUI(cita.estado);
+          const { fecha, hora } = splitFechaHora(
+            cita.fecha_solicitada || cita.fecha_hora || cita.fecha
+          );
+
+          return {
+            id: String(cita.id_cita || cita.id),
+            servicio:
+              cita.servicio ||
+              cita.tipo_servicio ||
+              cita.especialidad ||
+              'Consulta',
+            profesional:
+              cita.nombre_profesional ||
+              cita.profesional_nombre ||
+              cita.nombre_medico ||
+              `Profesional #${cita.id_profesional}`,
+            fecha,
+            hora,
+            estado: estadoUI,
+            tipo: cita.tipo_consulta || cita.modalidad || 'presencial',
+            ubicacion:
+              cita.ubicacion ||
+              cita.lugar ||
+              'Centro TLAMATINI (por confirmar)'
+          };
+        });
+
+        setCitas(mapped);
+      } catch (err) {
+        console.error('Error al cargar citas:', err);
+        Alert.alert(
+          'Error',
+          err.message || 'No se pudieron cargar tus citas. Intenta más tarde.'
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    init();
   }, []);
 
-  const loadCitas = () => {
-    // TODO: Implementar llamada a API para obtener citas del usuario
-    setCitas(citasEjemplo);
-  };
+  const goBack = () => navigation.goBack();
 
-  const getFilteredCitas = () => {
+  const filteredCitas = useMemo(() => {
     switch (activeFilter) {
       case 'pendientes':
-        return citas.filter(cita => cita.estado === 'pendiente' || cita.estado === 'confirmada');
+        return citas.filter(
+          (cita) => cita.estado === 'pendiente' || cita.estado === 'confirmada'
+        );
       case 'completadas':
-        return citas.filter(cita => cita.estado === 'completada');
+        return citas.filter((cita) => cita.estado === 'completada');
       default:
         return citas;
     }
-  };
-
-  const getStatusColor = (estado) => {
-    switch (estado) {
-      case 'confirmada':
-        return '#059669';
-      case 'pendiente':
-        return '#d97706';
-      case 'completada':
-        return '#6b7280';
-      case 'cancelada':
-        return '#dc2626';
-      default:
-        return '#6b7280';
-    }
-  };
-
-  const getStatusText = (estado) => {
-    switch (estado) {
-      case 'confirmada':
-        return 'Confirmada';
-      case 'pendiente':
-        return 'Pendiente';
-      case 'completada':
-        return 'Completada';
-      case 'cancelada':
-        return 'Cancelada';
-      default:
-        return estado;
-    }
-  };
-
-  const getServiceIcon = (servicio) => {
-    switch (servicio.toLowerCase()) {
-      case 'psicología':
-        return '🧭';
-      case 'nutrición':
-        return '🍎';
-      case 'enfermería':
-        return '🩺';
-      case 'asesoría legal':
-        return '📋';
-      default:
-        return '📅';
-    }
-  };
+  }, [activeFilter, citas]);
 
   const handleCitaPress = (cita) => {
     Alert.alert(
@@ -221,14 +306,44 @@ const MisCitasScreen = ({ navigation }) => {
     );
   };
 
-  const goBack = () => {
-    navigation.goBack();
-  };
+  if (loading) {
+    return (
+      <Container>
+        <StatusBar backgroundColor="#059669" barStyle="light-content" />
+        <BackButton onPress={goBack}>
+          <BackIcon>←</BackIcon>
+        </BackButton>
 
-  const filteredCitas = getFilteredCitas();
+        <ScrollContainer showsVerticalScrollIndicator={false}>
+          <HeaderContainer style={{ backgroundColor: '#059669' }}>
+            <WelcomeText>Mis Citas</WelcomeText>
+            <SubtitleText>
+              Gestiona y revisa todas tus citas médicas y de servicios profesionales.
+            </SubtitleText>
+          </HeaderContainer>
+
+          <LoadingWrapper>
+            <ActivityIndicator size="large" color="#059669" />
+            <LoadingText>Cargando tus citas...</LoadingText>
+          </LoadingWrapper>
+        </ScrollContainer>
+      </Container>
+    );
+  }
 
   return (
+<<<<<<< HEAD
+    <Container>
+      <StatusBar backgroundColor="#059669" barStyle="light-content" />
+
+      {/* Botón de regreso */}
+      <BackButton onPress={goBack}>
+        <BackIcon>←</BackIcon>
+      </BackButton>
+
+=======
     <Container>      
+>>>>>>> 948f9c500233500c81fd37398de74f76150664ba
       <ScrollContainer showsVerticalScrollIndicator={false}>
         {/* Header estándar con botón de regreso */}
         <StandardHeader
@@ -244,25 +359,29 @@ const MisCitasScreen = ({ navigation }) => {
           <SectionContainer>
             <SectionTitle>Filtrar Citas</SectionTitle>
             <FilterContainer>
-              <FilterButton 
-                active={activeFilter === 'todas'} 
+              <FilterButton
+                active={activeFilter === 'todas'}
                 onPress={() => setActiveFilter('todas')}
               >
                 <FilterText active={activeFilter === 'todas'}>Todas</FilterText>
               </FilterButton>
-              
-              <FilterButton 
-                active={activeFilter === 'pendientes'} 
+
+              <FilterButton
+                active={activeFilter === 'pendientes'}
                 onPress={() => setActiveFilter('pendientes')}
               >
-                <FilterText active={activeFilter === 'pendientes'}>Próximas</FilterText>
+                <FilterText active={activeFilter === 'pendientes'}>
+                  Próximas
+                </FilterText>
               </FilterButton>
-              
-              <FilterButton 
-                active={activeFilter === 'completadas'} 
+
+              <FilterButton
+                active={activeFilter === 'completadas'}
                 onPress={() => setActiveFilter('completadas')}
               >
-                <FilterText active={activeFilter === 'completadas'}>Historial</FilterText>
+                <FilterText active={activeFilter === 'completadas'}>
+                  Historial
+                </FilterText>
               </FilterButton>
             </FilterContainer>
           </SectionContainer>
@@ -275,20 +394,25 @@ const MisCitasScreen = ({ navigation }) => {
                 {activeFilter === 'pendientes' && 'Próximas Citas'}
                 {activeFilter === 'completadas' && 'Historial de Citas'}
               </SectionTitle>
-              
+
               {filteredCitas.map((cita) => (
-                <ActivityCard 
-                  key={cita.id} 
+                <ActivityCard
+                  key={cita.id}
                   onPress={() => handleCitaPress(cita)}
                   style={{ marginBottom: 15 }}
                 >
                   <ActivityIcon>{getServiceIcon(cita.servicio)}</ActivityIcon>
                   <ActivityInfo style={{ flex: 1 }}>
                     <ActivityTitle>{cita.servicio}</ActivityTitle>
-                    <ActivityDescription>👨‍⚕️ {cita.profesional}</ActivityDescription>
-                    <ActivityDescription>📅 {cita.fecha} • {cita.hora}</ActivityDescription>
+                    <ActivityDescription>
+                      👨‍⚕️ {cita.profesional}
+                    </ActivityDescription>
+                    <ActivityDescription>
+                      📅 {cita.fecha}
+                      {cita.hora ? ` • ${cita.hora}` : ''}
+                    </ActivityDescription>
                     <ActivityDescription>📍 {cita.ubicacion}</ActivityDescription>
-                    <StatusIndicator 
+                    <StatusIndicator
                       color={getStatusColor(cita.estado)}
                       style={{ marginTop: 8, alignSelf: 'flex-start' }}
                     >
@@ -307,17 +431,22 @@ const MisCitasScreen = ({ navigation }) => {
                 {activeFilter === 'completadas' && 'No tienes citas en el historial'}
               </EmptyStateTitle>
               <EmptyStateDescription>
-                {activeFilter === 'todas' && 'Solicita tu primera cita con nuestros profesionales para comenzar tu atención personalizada.'}
-                {activeFilter === 'pendientes' && 'Todas tus citas están al día. ¡Programa una nueva cuando lo necesites!'}
-                {activeFilter === 'completadas' && 'Aún no has completado ninguna cita. Una vez que lo hagas, aparecerán aquí.'}
+                {activeFilter === 'todas' &&
+                  'Solicita tu primera cita con nuestros profesionales para comenzar tu atención personalizada.'}
+                {activeFilter === 'pendientes' &&
+                  'Todas tus citas están al día. ¡Programa una nueva cuando lo necesites!'}
+                {activeFilter === 'completadas' &&
+                  'Aún no has completado ninguna cita. Una vez que lo hagas, aparecerán aquí.'}
               </EmptyStateDescription>
             </EmptyStateCard>
           )}
 
           {/* Botón de acción */}
           <SectionContainer>
-            <PrimaryButton 
-              onPress={() => navigation.navigate('ServiciosProfesionales')}
+            <PrimaryButton
+              onPress={() =>
+                navigation.navigate('NuevaCita', { beneficiarioId })
+              }
               style={{ backgroundColor: '#059669' }}
             >
               <PrimaryButtonText>Solicitar Nueva Cita</PrimaryButtonText>
@@ -326,8 +455,11 @@ const MisCitasScreen = ({ navigation }) => {
 
           {/* Información de ayuda */}
           <SectionContainer>
-            <SectionDescription style={{ textAlign: 'center', fontStyle: 'italic' }}>
-              💡 Tip: Puedes cancelar o reagendar tus citas hasta 24 horas antes de la fecha programada.
+            <SectionDescription
+              style={{ textAlign: 'center', fontStyle: 'italic' }}
+            >
+              💡 Tip: Puedes cancelar o reagendar tus citas hasta 24 horas antes de
+              la fecha programada.
             </SectionDescription>
           </SectionContainer>
         </ContentContainer>

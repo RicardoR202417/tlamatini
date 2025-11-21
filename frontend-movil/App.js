@@ -6,6 +6,9 @@ import { UserProvider } from './src/context/UserContext';
 import WelcomeScreen from './src/screens/WelcomeScreen';
 import LoginScreen from './src/screens/LoginScreen';
 import RegisterScreen from './src/screens/RegisterScreen';
+import NuevaCitaScreen from './src/screens/NuevaCitaScreen';
+import CitasPendientesProfesionalScreen from './src/screens/CitasPendientesProfesionalScreen';
+
 
 import BeneficiarioHomeScreen from './src/screens/BeneficiarioHomeScreen';
 import ProfesionalHomeScreen from './src/screens/ProfesionalHomeScreen';
@@ -135,7 +138,16 @@ export default function App() {
             component={DonacionEspecieScreen}
             options={{ title: 'Donación en Especie', headerShown: false }}
           />
-
+<Stack.Screen
+  name="CitasPendientesProfesional"
+  component={CitasPendientesProfesionalScreen}
+  options={{ headerShown: false }}
+/>
+<Stack.Screen
+  name="NuevaCita"
+  component={NuevaCitaScreen}
+  options={{ title: 'Nueva Cita', headerShown: false }}
+/>
           <Stack.Screen
             name="MisDonaciones"
             component={MisDonacionesScreen}

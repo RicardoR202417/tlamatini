@@ -1,6 +1,8 @@
 import { VITE_API_URL } from '@env';
 
 export const API_BASE_URL = VITE_API_URL || 'http://localhost:3000';
+// 🔎 OJO: si tu backend corre en 4000, algo como:
+// export const API_BASE_URL = VITE_API_URL || 'http://192.168.1.80:4000';
 
 class ApiService {
   constructor() {
@@ -220,6 +222,125 @@ class ApiService {
       };
     }
   }
+
+  /* ============================
+   *      MÓDULO DE CITAS
+   * ============================ */
+
+  /**
+   * Obtiene las citas de un beneficiario
+   * GET /api/citas?beneficiario={id}
+   */
+  async getCitasBeneficiario(id_beneficiario, filtros = {}) {
+    const params = new URLSearchParams({
+      beneficiario: String(id_beneficiario),
+      ...Object.fromEntries(
+        Object.entries(filtros).filter(([, v]) => v !== undefined && v !== null && v !== '')
+      )
+    }).toString();
+
+    const endpoint = `/api/citas?${params}`;
+    return this.request('GET', endpoint);
+  }
+
+  /**
+   * Crea una nueva cita
+   * POST /api/citas
+   * body: { id_beneficiario, id_profesional, fecha_solicitada, motivo? }
+   */
+  async crearCita(data) {
+    return this.request('POST', '/api/citas', data);
+  }
+
+  /**
+   * (Opcional) Obtiene citas de un profesional, con filtros
+   * GET /api/citas?profesional={id}&estado=pendiente
+   */
+  async getCitasProfesional(id_profesional, filtros = {}) {
+    const params = new URLSearchParams({
+      profesional: String(id_profesional),
+      ...Object.fromEntries(
+        Object.entries(filtros).filter(([, v]) => v !== undefined && v !== null && v !== '')
+      )
+    }).toString();
+
+    const endpoint = `/api/citas?${params}`;
+    return this.request('GET', endpoint);
+  }
+
+  /**
+   * (Opcional) Confirmar cita
+   * POST /api/citas/:id/confirmar
+   * body: { fecha_confirmada }
+   */
+
+    /**
+   * Lista de profesionales disponibles
+   * GET /api/profesionales
+   */
+
+
+  async confirmarCita(id_cita, data) {
+    return this.request('POST', `/api/citas/${id_cita}/confirmar`, data);
+  }
+// Listar citas de un profesional
+async getCitasProfesional(id_profesional) {
+  return this.request('GET', `/api/citas?profesional=${id_profesional}&estado=pendiente`);
 }
+
+// Confirmar cita
+async confirmarCita(id, data) {
+  return this.request('POST', `/api/citas/${id}/confirmar`, data);
+}
+
+// Cancelar cita
+async cancelarCita(id, data) {
+  return this.request('POST', `/api/citas/${id}/cancelar`, data);
+}
+
+// Marcar como atendida
+async atenderCita(id, data) {
+  return this.request('POST', `/api/citas/${id}/atender`, data);
+}
+
+  /**
+   * (Opcional) Cancelar cita
+   * POST /api/citas/:id/cancelar
+   * body: { motivo_cancelacion }
+   */
+  async cancelarCita(id_cita, data) {
+    return this.request('POST', `/api/citas/${id_cita}/cancelar`, data);
+  }
+
+  /**
+   * (Opcional) Marcar cita como atendida
+   * POST /api/citas/:id/atender
+   * body: { notas }
+   */
+  async atenderCita(id_cita, data) {
+    return this.request('POST', `/api/citas/${id_cita}/atender`, data);
+  }
+
+  /**
+   * Lista de profesionales disponibles
+   */
+  async getProfesionales() {
+    const res = await this.request('GET', '/api/profesionales');
+
+    // Puede venir como array directo o como objeto con .data
+    if (Array.isArray(res)) {
+      return res;
+    }
+
+    if (res && Array.isArray(res.data)) {
+      return res.data;
+    }
+
+    return [];
+  }
+}
+
+
+
 
 export default new ApiService();

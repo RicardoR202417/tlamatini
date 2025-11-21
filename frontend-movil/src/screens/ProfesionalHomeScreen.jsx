@@ -104,7 +104,8 @@ const ProfesionalHomeScreen = ({ navigation }) => {
   const handleSeccionPress = (seccion) => {
     switch (seccion.id) {
       case 'mi-agenda':
-        navigation.navigate('MisCitas');
+        // 👇 ahora va a la pantalla de gestión de citas del profesional
+        navigation.navigate('CitasPendientesProfesional');
         break;
       
       case 'historial-consultas':
@@ -155,6 +156,21 @@ const ProfesionalHomeScreen = ({ navigation }) => {
 
         <ContentContainer>
           {/* Acciones rápidas */}
+<<<<<<< HEAD
+          <QuickActionsContainer>
+            <QuickActionButton onPress={() => navigation.navigate('MiPerfil')}>
+              <QuickActionIcon>👤</QuickActionIcon>
+              <QuickActionText>Mi Perfil</QuickActionText>
+            </QuickActionButton>
+            
+            <QuickActionButton
+              // 👇 aquí también lo mandamos a la pantalla de citas del profesional
+              onPress={() => navigation.navigate('CitasPendientesProfesional')}
+            >
+              <QuickActionIcon>📅</QuickActionIcon>
+              <QuickActionText>Mi Agenda</QuickActionText>
+            </QuickActionButton>
+=======
           <QuickActionsContainer style={{ flexDirection: 'column' }}>
             {/* Primera fila - 3 botones */}
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 }}>
@@ -167,6 +183,7 @@ const ProfesionalHomeScreen = ({ navigation }) => {
                 <QuickActionIcon>📅</QuickActionIcon>
                 <QuickActionText>Mi Agenda</QuickActionText>
               </QuickActionButton>
+>>>>>>> 948f9c500233500c81fd37398de74f76150664ba
 
               <QuickActionButton style={{ width: '31%' }} onPress={() => navigation.navigate('HistorialConsultas')}>
                 <QuickActionIcon>📋</QuickActionIcon>
