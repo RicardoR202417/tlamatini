@@ -1,5 +1,6 @@
 import React from 'react';
 import { StatusBar, TouchableOpacity } from 'react-native';
+import StandardHeader from '../components/StandardHeader';
 import {
   Container,
   ScrollContainer,
@@ -20,31 +21,6 @@ import {
   StatusText
 } from '../styles/BeneficiarioHome.styles';
 import styled from 'styled-components/native';
-
-// Estilos específicos para esta pantalla
-const BackButton = styled.TouchableOpacity`
-  position: absolute;
-  top: 50px;
-  left: 20px;
-  background-color: rgba(255, 255, 255, 0.95);
-  border-radius: 25px;
-  width: 50px;
-  height: 50px;
-  justify-content: center;
-  align-items: center;
-  shadow-color: #000;
-  shadow-offset: 0px 2px;
-  shadow-opacity: 0.2;
-  shadow-radius: 4px;
-  elevation: 10;
-  z-index: 1000;
-`;
-
-const BackIcon = styled.Text`
-  font-size: 24px;
-  color: #3EAB37;
-  font-weight: bold;
-`;
 
 const ServiciosProfesionalesScreen = ({ navigation }) => {
   // Servicios Profesionales disponibles
@@ -86,28 +62,18 @@ const ServiciosProfesionalesScreen = ({ navigation }) => {
     }
   };
 
-  const goBack = () => {
-    navigation.goBack();
-  };
-
   return (
     <Container>
-      <StatusBar backgroundColor="#3EAB37" barStyle="light-content" />
-      
-      {/* Botón de regreso */}
-      <BackButton onPress={goBack}>
-        <BackIcon>←</BackIcon>
-      </BackButton>
-      
       <ScrollContainer showsVerticalScrollIndicator={false}>
-        {/* Header */}
-        <HeaderContainer>
-          <WelcomeText>Servicios Profesionales</WelcomeText>
-          <SubtitleText>
-            Solicita citas con nuestros profesionales especializados para recibir atención personalizada.
-          </SubtitleText>
-        </HeaderContainer>
-
+        <StandardHeader
+          backgroundColor="#3EAB37"
+          title="Servicios Profesionales"
+          subtitle="Centro de Atención Especializada"
+          description="Solicita citas con nuestros profesionales especializados para recibir atención personalizada."
+          showBackButton={true}
+          onBackPress={() => navigation.goBack()}
+        />
+        
         <ContentContainer>
           {/* Información general */}
           <SectionContainer>

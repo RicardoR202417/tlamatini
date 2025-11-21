@@ -1,6 +1,7 @@
 // src/screens/LoginScreen.jsx
 import React, { useEffect, useState } from 'react';
-import { StatusBar, Alert, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
+import { StatusBar, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, TouchableOpacity, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
 import * as AuthSession from 'expo-auth-session';
@@ -47,6 +48,7 @@ const LoginScreen = ({ navigation }) => {
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [userType, setUserType] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   // Web Client ID desde .env del frontend
   const clientId = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID?.trim();
@@ -192,12 +194,31 @@ const LoginScreen = ({ navigation }) => {
 
         <InputContainer>
           <InputLabel>Contraseña</InputLabel>
-          <TextInput
-            placeholder="Tu contraseña"
-            value={formData.contraseña}
-            onChangeText={(v) => updateField('contraseña', v)}
-            secureTextEntry
-          />
+          <View style={{ position: 'relative' }}>
+            <TextInput
+              placeholder="Tu contraseña"
+              value={formData.contraseña}
+              onChangeText={(v) => updateField('contraseña', v)}
+              secureTextEntry={!showPassword}
+              style={{ paddingRight: 50 }}
+            />
+            <TouchableOpacity
+              style={{
+                position: 'absolute',
+                right: 15,
+                top: '50%',
+                transform: [{ translateY: -12 }],
+                zIndex: 1
+              }}
+              onPress={() => setShowPassword(!showPassword)}
+            >
+              <Ionicons 
+                name={showPassword ? 'eye-off' : 'eye'} 
+                size={24} 
+                color="#666" 
+              />
+            </TouchableOpacity>
+          </View>
           {errors.contraseña && <ErrorMessage>{errors.contraseña}</ErrorMessage>}
         </InputContainer>
 

@@ -4,59 +4,97 @@ import styled from 'styled-components/native';
 import { UserContext } from '../context/UserContext';
 import { inscribirseEnActividad, cancelarInscripcion } from '../services/actividadesService';
 
-const Container = styled.SafeAreaView`
-  flex: 1;
-  background-color: #ffffff;
-`;
-
-const ScrollContainer = styled.ScrollView`
-  flex: 1;
-  padding: 0;
-`;
-
-const HeaderSection = styled.View`
+// Header personalizado para mejor estética
+const CustomHeader = styled.View`
   background-color: #2563eb;
-  padding: 20px;
-  padding-top: 10px;
+  padding: 50px 20px 30px 20px;
+  margin-top: -50px;
+  padding-top: 70px;
+  position: relative;
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
 `;
 
 const BackButton = styled.TouchableOpacity`
-  flex-direction: row;
-  align-items: center;
-  margin-bottom: 10px;
+  position: absolute;
+  top: 50px;
+  left: 20px;
+  padding: 8px;
+  z-index: 10;
 `;
 
 const BackIcon = styled.Text`
   font-size: 24px;
-  color: #ffffff;
-  margin-right: 10px;
+  color: white;
+  font-weight: bold;
 `;
 
-const Title = styled.Text`
+const HeaderContent = styled.View`
+  padding-top: 20px;
+  align-items: center;
+`;
+
+const HeaderTitle = styled.Text`
   font-size: 24px;
   font-weight: bold;
-  color: #ffffff;
-  margin-bottom: 5px;
+  color: white;
+  text-align: center;
+  margin-bottom: 8px;
 `;
 
-const IconBig = styled.Text`
-  font-size: 48px;
-  margin-top: 10px;
+const HeaderSubtitle = styled.Text`
+  font-size: 16px;
+  color: #bfdbfe;
+  text-align: center;
+  margin-bottom: 16px;
+`;
+
+const Container = styled.SafeAreaView`
+  flex: 1;
+  background-color: #2563eb;
+`;
+
+const ScrollContainer = styled.ScrollView`
+  flex: 1;
+  background-color: #f9fafb;
 `;
 
 const ContentContainer = styled.View`
   padding: 20px;
 `;
 
+const IconBig = styled.Text`
+  font-size: 64px;
+  text-align: center;
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 40px;
+  width: 80px;
+  height: 80px;
+  line-height: 80px;
+  overflow: hidden;
+`;
+
+const InfoCard = styled.View`
+  background-color: white;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 16px;
+  shadow-color: #000;
+  shadow-offset: 0px 4px;
+  shadow-opacity: 0.1;
+  shadow-radius: 8px;
+  elevation: 6;
+`;
+
 const Section = styled.View`
-  margin-bottom: 25px;
+  margin-bottom: 20px;
 `;
 
 const SectionTitle = styled.Text`
-  font-size: 18px;
+  font-size: 20px;
   font-weight: bold;
   color: #1f2937;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 `;
 
 const SectionContent = styled.Text`
@@ -68,30 +106,38 @@ const SectionContent = styled.Text`
 const DetailRow = styled.View`
   flex-direction: row;
   align-items: center;
-  margin-bottom: 12px;
-  padding: 12px;
-  background-color: #f3f4f6;
-  border-radius: 8px;
+  margin-bottom: 16px;
+  padding: 16px;
+  background-color: #f8fafc;
+  border-radius: 12px;
+  border-left-width: 3px;
+  border-left-color: #2563eb;
 `;
 
 const DetailIcon = styled.Text`
-  font-size: 18px;
-  margin-right: 12px;
-  width: 25px;
+  font-size: 20px;
+  margin-right: 16px;
+  width: 28px;
 `;
 
 const DetailText = styled.Text`
-  font-size: 14px;
+  font-size: 15px;
   color: #1f2937;
   flex: 1;
+  font-weight: 500;
 `;
 
 const PrimaryButton = styled.TouchableOpacity`
   background-color: #2563eb;
-  padding: 15px;
-  border-radius: 8px;
+  padding: 16px 24px;
+  border-radius: 12px;
   align-items: center;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
+  shadow-color: #2563eb;
+  shadow-offset: 0px 4px;
+  shadow-opacity: 0.3;
+  shadow-radius: 6px;
+  elevation: 8;
 `;
 
 const PrimaryButtonText = styled.Text`
@@ -402,31 +448,39 @@ const DetalleActividadScreen = ({ route, navigation }) => {
         </ModalOverlay>
       </Modal>
       
+      <StatusBar backgroundColor="#2563eb" barStyle="light-content" />
+      
       <ScrollContainer showsVerticalScrollIndicator={false}>
-        {/* Header */}
-        <HeaderSection>
+        <CustomHeader>
           <BackButton onPress={() => navigation.goBack()}>
             <BackIcon>←</BackIcon>
           </BackButton>
-          <Title>{actividad.titulo}</Title>
-          <IconBig>{icon}</IconBig>
-        </HeaderSection>
+          
+          <HeaderContent>
+            <HeaderTitle>{actividad.titulo || 'Detalle de Actividad'}</HeaderTitle>
+            <HeaderSubtitle>Programa Social Comunitario</HeaderSubtitle>
+            <IconBig>{icon}</IconBig>
+          </HeaderContent>
+        </CustomHeader>
 
         <ContentContainer>
           {/* Descripción */}
-          <Section>
-            <SectionTitle>Descripción</SectionTitle>
-            <SectionContent>{actividad.descripcion}</SectionContent>
-          </Section>
+          <InfoCard>
+            <Section>
+              <SectionTitle>Descripción</SectionTitle>
+              <SectionContent>{actividad.descripcion}</SectionContent>
+            </Section>
+          </InfoCard>
 
           {/* Detalles */}
-          <Section>
-            <SectionTitle>Detalles</SectionTitle>
-            
-            <DetailRow>
-              <DetailIcon>📅</DetailIcon>
-              <DetailText>{fechaFormato}</DetailText>
-            </DetailRow>
+          <InfoCard>
+            <Section>
+              <SectionTitle>Detalles</SectionTitle>
+              
+              <DetailRow>
+                <DetailIcon>📅</DetailIcon>
+                <DetailText>{fechaFormato}</DetailText>
+              </DetailRow>
 
             {actividad.horario_inicio && (
               <DetailRow>
@@ -459,10 +513,13 @@ const DetalleActividadScreen = ({ route, navigation }) => {
                 </DetailText>
               </DetailRow>
             )}
-          </Section>
+            </Section>
+          </InfoCard>
 
           {/* Acciones */}
-          <Section>
+          <InfoCard>
+            <Section>
+              <SectionTitle>Inscripción</SectionTitle>
             {loading ? (
               <LoadingContainer>
                 <ActivityIndicator size="large" color="#2563eb" />
@@ -481,21 +538,24 @@ const DetalleActividadScreen = ({ route, navigation }) => {
                 <PrimaryButtonText>Inscribirse Ahora</PrimaryButtonText>
               </PrimaryButton>
             )}
-          </Section>
+            </Section>
+          </InfoCard>
 
           {/* Participantes */}
           {actividad.inscripciones && actividad.inscripciones.length > 0 && (
-            <Section>
-              <SectionTitle>Participantes Confirmados</SectionTitle>
-              {actividad.inscripciones.map((inscripcion, index) => (
-                <DetailRow key={index}>
-                  <DetailIcon>👤</DetailIcon>
-                  <DetailText>
-                    {inscripcion.usuario?.nombres} {inscripcion.usuario?.apellidos}
-                  </DetailText>
-                </DetailRow>
-              ))}
-            </Section>
+            <InfoCard>
+              <Section>
+                <SectionTitle>Participantes Confirmados</SectionTitle>
+                {actividad.inscripciones.map((inscripcion, index) => (
+                  <DetailRow key={index}>
+                    <DetailIcon>👤</DetailIcon>
+                    <DetailText>
+                      {inscripcion.usuario?.nombres} {inscripcion.usuario?.apellidos}
+                    </DetailText>
+                  </DetailRow>
+                ))}
+              </Section>
+            </InfoCard>
           )}
         </ContentContainer>
       </ScrollContainer>

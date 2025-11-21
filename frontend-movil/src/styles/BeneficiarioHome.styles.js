@@ -1,13 +1,18 @@
 import styled from 'styled-components/native';
 
 // Contenedor principal
-export const Container = styled.SafeAreaView`
+export const Container = styled.View`
   flex: 1;
   background-color: #f7fafc;
 `;
 
 export const ScrollContainer = styled.ScrollView`
   flex: 1;
+`;
+
+export const ContentWrapper = styled.View`
+  flex: 1;
+  background-color: #f7fafc;
 `;
 
 export const ContentContainer = styled.View`
@@ -17,7 +22,7 @@ export const ContentContainer = styled.View`
 // Header con bienvenida personalizada
 export const HeaderContainer = styled.View`
   background-color: #3EAB37;
-  padding: 24px 20px;
+  padding: 50px 20px 24px 20px;
   border-bottom-left-radius: 24px;
   border-bottom-right-radius: 24px;
   margin-bottom: 20px;
@@ -176,6 +181,7 @@ export const DonationDescription = styled.Text`
 // Botones de acción rápida
 export const QuickActionsContainer = styled.View`
   flex-direction: row;
+  flex-wrap: wrap;
   justify-content: space-between;
   margin-bottom: 20px;
 `;
@@ -183,10 +189,10 @@ export const QuickActionsContainer = styled.View`
 export const QuickActionButton = styled.TouchableOpacity`
   background-color: white;
   border-radius: 14px;
-  padding: 16px 12px;
+  padding: 18px 12px;
   align-items: center;
-  flex: 1;
-  margin: 0 6px;
+  width: 48%;
+  margin-bottom: 12px;
   shadow-color: #000;
   shadow-offset: 0px 2px;
   shadow-opacity: 0.08;
@@ -195,15 +201,16 @@ export const QuickActionButton = styled.TouchableOpacity`
 `;
 
 export const QuickActionIcon = styled.Text`
-  font-size: 22px;
-  margin-bottom: 6px;
+  font-size: 28px;
+  margin-bottom: 8px;
 `;
 
 export const QuickActionText = styled.Text`
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 600;
   color: #2d3748;
   text-align: center;
+  line-height: 16px;
 `;
 
 // Botón principal

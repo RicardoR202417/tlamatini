@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { StatusBar, Alert } from 'react-native';
 import StorageService from '../services/StorageService';
+import StandardHeader from './StandardHeader';
 import {
   Container,
   ScrollContainer,
   ContentContainer,
-  HeaderContainer,
-  WelcomeText,
-  UserNameText,
-  SubtitleText,
+  ContentWrapper,
   SectionContainer,
   SectionTitle,
   SectionDescription,
@@ -36,7 +34,8 @@ import {
   SecondaryButtonText,
   Divider,
   StatusIndicator,
-  StatusText
+  StatusText,
+  WelcomeText
 } from '../styles/BeneficiarioHome.styles';
 
 const DashboardBeneficiario = ({ navigation }) => {
@@ -119,29 +118,32 @@ const DashboardBeneficiario = ({ navigation }) => {
   if (loading) {
     return (
       <Container>
-        <StatusBar backgroundColor="#3EAB37" barStyle="light-content" />
-        <ContentContainer>
-          <WelcomeText>Cargando...</WelcomeText>
-        </ContentContainer>
+        <StandardHeader
+          backgroundColor="#3EAB37" 
+          title="Cargando..."
+        />
+        <ContentWrapper>
+          <ContentContainer>
+            <WelcomeText>Cargando...</WelcomeText>
+          </ContentContainer>
+        </ContentWrapper>
       </Container>
     );
   }
 
   return (
     <Container>
-      <StatusBar backgroundColor="#3EAB37" barStyle="light-content" />
-      
       <ScrollContainer showsVerticalScrollIndicator={false}>
-        {/* Header con bienvenida personalizada */}
-        <HeaderContainer>
-          <WelcomeText>¡Bienvenido!</WelcomeText>
-          <UserNameText>{userData?.nombres} {userData?.apellidos}</UserNameText>
-          <SubtitleText>
-            Explora los servicios y programas disponibles para mejorar tu bienestar y calidad de vida.
-          </SubtitleText>
-        </HeaderContainer>
+        {/* Header estándar con datos del usuario */}
+        <StandardHeader
+          backgroundColor="#3EAB37"
+          title="¡Bienvenido!"
+          subtitle={`${userData?.nombres} ${userData?.apellidos}`}
+          description="Explora los servicios y programas disponibles para mejorar tu bienestar y calidad de vida."
+        />
 
-        <ContentContainer>
+        <ContentWrapper>
+          <ContentContainer>
           {/* Acciones rápidas */}
           <QuickActionsContainer>
             <QuickActionButton onPress={() => navigation.navigate('MiPerfil')}>
@@ -153,6 +155,7 @@ const DashboardBeneficiario = ({ navigation }) => {
               <QuickActionIcon>📋</QuickActionIcon>
               <QuickActionText>Mis Citas</QuickActionText>
             </QuickActionButton>
+            
             <QuickActionButton onPress={() => navigation.navigate('MisInscripciones')}>
               <QuickActionIcon>📑</QuickActionIcon>
               <QuickActionText>Mis Actividades</QuickActionText>
@@ -161,11 +164,6 @@ const DashboardBeneficiario = ({ navigation }) => {
             <QuickActionButton onPress={() => navigation.navigate('Avisos')}>
               <QuickActionIcon>🔔</QuickActionIcon>
               <QuickActionText>Avisos</QuickActionText>
-            </QuickActionButton>
-
-            <QuickActionButton onPress={() => navigation.navigate('Contacto')}>
-              <QuickActionIcon>✉️</QuickActionIcon>
-              <QuickActionText>Contacto</QuickActionText>
             </QuickActionButton>
           </QuickActionsContainer>
 
@@ -196,13 +194,14 @@ const DashboardBeneficiario = ({ navigation }) => {
 
           <Divider />
 
-          {/* Botón de navegación principal */}
+          {/* Botón de contacto y ayuda */}
           <SectionContainer>
-            <PrimaryButton onPress={() => Alert.alert('Próximamente', 'Centro de ayuda será implementado')}>
-              <PrimaryButtonText>¿Necesitas Ayuda?</PrimaryButtonText>
+            <PrimaryButton onPress={() => navigation.navigate('Contacto')}>
+              <PrimaryButtonText>Contacto y Ayuda</PrimaryButtonText>
             </PrimaryButton>
           </SectionContainer>
         </ContentContainer>
+        </ContentWrapper>
       </ScrollContainer>
     </Container>
   );

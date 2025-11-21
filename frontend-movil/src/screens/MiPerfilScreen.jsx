@@ -5,6 +5,7 @@ import StorageService from '../services/StorageService';
 import ApiService from '../api/ApiService';
 import ConfirmModal from '../components/ConfirmModal';
 import ErrorModal from '../components/ErrorModal';
+import StandardHeader from '../components/StandardHeader';
 import {
   Container,
   ScrollContainer,
@@ -28,29 +29,6 @@ import {
 import styled from 'styled-components/native';
 
 // Estilos específicos para esta pantalla
-const BackButton = styled.TouchableOpacity`
-  position: absolute;
-  top: 50px;
-  left: 20px;
-  background-color: rgba(255, 255, 255, 0.95);
-  border-radius: 25px;
-  width: 50px;
-  height: 50px;
-  justify-content: center;
-  align-items: center;
-  shadow-color: #000;
-  shadow-offset: 0px 2px;
-  shadow-opacity: 0.2;
-  shadow-radius: 4px;
-  elevation: 10;
-  z-index: 1000;
-`;
-
-const BackIcon = styled.Text`
-  font-size: 24px;
-  color: #6366f1;
-  font-weight: bold;
-`;
 
 const ProfileCard = styled.View`
   background-color: white;
@@ -444,14 +422,16 @@ const MiPerfilScreen = ({ navigation }) => {
     setErrorMessage('');
   };
 
-  const goBack = () => {
-    navigation.goBack();
-  };
-
   if (loading) {
     return (
       <Container>
-        <StatusBar backgroundColor="#6366f1" barStyle="light-content" />
+        <StandardHeader
+          backgroundColor="#6366f1"
+          title="Mi Perfil"
+          subtitle="Cargando..."
+          showBackButton={true}
+          onBackPress={() => navigation.goBack()}
+        />
         <ContentContainer>
           <WelcomeText>Cargando perfil...</WelcomeText>
         </ContentContainer>
@@ -467,21 +447,15 @@ const MiPerfilScreen = ({ navigation }) => {
 
   return (
     <Container>
-      <StatusBar backgroundColor="#6366f1" barStyle="light-content" />
-      
-      {/* Botón de regreso */}
-      <BackButton onPress={goBack}>
-        <BackIcon>←</BackIcon>
-      </BackButton>
+      <StandardHeader
+        backgroundColor="#6366f1"
+        title="Mi Perfil"
+        description="Gestiona tu información personal y configuraciones de cuenta."
+        showBackButton={true}
+        onBackPress={() => navigation.goBack()}
+      />
       
       <ScrollContainer showsVerticalScrollIndicator={false}>
-        {/* Header */}
-        <HeaderContainer style={{ backgroundColor: '#6366f1' }}>
-          <WelcomeText>Mi Perfil</WelcomeText>
-          <SubtitleText>
-            Gestiona tu información personal y configuraciones de cuenta.
-          </SubtitleText>
-        </HeaderContainer>
 
         <ContentContainer>
           {/* Tarjeta de perfil principal */}
