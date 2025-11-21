@@ -104,7 +104,8 @@ const ProfesionalHomeScreen = ({ navigation }) => {
   const handleSeccionPress = (seccion) => {
     switch (seccion.id) {
       case 'mi-agenda':
-        navigation.navigate('MisCitas');
+        // 👇 ahora va a la pantalla de gestión de citas del profesional
+        navigation.navigate('CitasPendientesProfesional');
         break;
       
       case 'historial-consultas':
@@ -161,7 +162,10 @@ const ProfesionalHomeScreen = ({ navigation }) => {
               <QuickActionText>Mi Perfil</QuickActionText>
             </QuickActionButton>
             
-            <QuickActionButton onPress={() => navigation.navigate('MisCitas')}>
+            <QuickActionButton
+              // 👇 aquí también lo mandamos a la pantalla de citas del profesional
+              onPress={() => navigation.navigate('CitasPendientesProfesional')}
+            >
               <QuickActionIcon>📅</QuickActionIcon>
               <QuickActionText>Mi Agenda</QuickActionText>
             </QuickActionButton>
