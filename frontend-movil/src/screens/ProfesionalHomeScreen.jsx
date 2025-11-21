@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StatusBar, Alert } from 'react-native';
+import { StatusBar, Alert, View } from 'react-native';
 import StorageService from '../services/StorageService';
 import {
   Container,
@@ -132,7 +132,7 @@ const ProfesionalHomeScreen = ({ navigation }) => {
   if (loading) {
     return (
       <Container>
-        <StatusBar backgroundColor="#6366f1" barStyle="light-content" />
+        <StatusBar backgroundColor="#3EAB37" barStyle="light-content" />
         <ContentContainer>
           <WelcomeText>Cargando...</WelcomeText>
         </ContentContainer>
@@ -142,11 +142,11 @@ const ProfesionalHomeScreen = ({ navigation }) => {
 
   return (
     <Container>
-      <StatusBar backgroundColor="#6366f1" barStyle="light-content" />
+      <StatusBar backgroundColor="#3EAB37" barStyle="light-content" />
       
       <ScrollContainer showsVerticalScrollIndicator={false}>
         {/* Header con bienvenida personalizada */}
-        <HeaderContainer style={{ backgroundColor: '#6366f1' }}>
+        <HeaderContainer style={{ backgroundColor: '#3EAB37' }}>
           <WelcomeText>¡Hola Profesional!</WelcomeText>
           <UserNameText>{userData?.nombres} {userData?.apellidos}</UserNameText>
           <SubtitleText>
@@ -156,6 +156,7 @@ const ProfesionalHomeScreen = ({ navigation }) => {
 
         <ContentContainer>
           {/* Acciones rápidas */}
+<<<<<<< HEAD
           <QuickActionsContainer>
             <QuickActionButton onPress={() => navigation.navigate('MiPerfil')}>
               <QuickActionIcon>👤</QuickActionIcon>
@@ -169,26 +170,39 @@ const ProfesionalHomeScreen = ({ navigation }) => {
               <QuickActionIcon>📅</QuickActionIcon>
               <QuickActionText>Mi Agenda</QuickActionText>
             </QuickActionButton>
+=======
+          <QuickActionsContainer style={{ flexDirection: 'column' }}>
+            {/* Primera fila - 3 botones */}
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 }}>
+              <QuickActionButton style={{ width: '31%' }} onPress={() => navigation.navigate('MiPerfil')}>
+                <QuickActionIcon>👤</QuickActionIcon>
+                <QuickActionText>Mi Perfil</QuickActionText>
+              </QuickActionButton>
+              
+              <QuickActionButton style={{ width: '31%' }} onPress={() => navigation.navigate('MisCitas')}>
+                <QuickActionIcon>📅</QuickActionIcon>
+                <QuickActionText>Mi Agenda</QuickActionText>
+              </QuickActionButton>
+>>>>>>> 948f9c500233500c81fd37398de74f76150664ba
 
-            <QuickActionButton onPress={() => navigation.navigate('HistorialConsultas')}>
-              <QuickActionIcon>📋</QuickActionIcon>
-              <QuickActionText>Consultas</QuickActionText>
-            </QuickActionButton>
+              <QuickActionButton style={{ width: '31%' }} onPress={() => navigation.navigate('HistorialConsultas')}>
+                <QuickActionIcon>📋</QuickActionIcon>
+                <QuickActionText>Consultas</QuickActionText>
+              </QuickActionButton>
+            </View>
 
-            <QuickActionButton onPress={() => navigation.navigate('MisInscripciones')}>
-              <QuickActionIcon>📑</QuickActionIcon>
-              <QuickActionText>Mis Actividades</QuickActionText>
-            </QuickActionButton>
+            {/* Segunda fila - 2 botones */}
+            <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
+              <QuickActionButton style={{ width: '48%' }} onPress={() => navigation.navigate('MisInscripciones')}>
+                <QuickActionIcon>📑</QuickActionIcon>
+                <QuickActionText>Mis Actividades</QuickActionText>
+              </QuickActionButton>
 
-            <QuickActionButton onPress={() => navigation.navigate('Avisos')}>
-              <QuickActionIcon>🔔</QuickActionIcon>
-              <QuickActionText>Avisos</QuickActionText>
-            </QuickActionButton>
-
-            <QuickActionButton onPress={() => navigation.navigate('Contacto')}>
-              <QuickActionIcon>✉️</QuickActionIcon>
-              <QuickActionText>Contacto</QuickActionText>
-            </QuickActionButton>
+              <QuickActionButton style={{ width: '48%' }} onPress={() => navigation.navigate('Avisos')}>
+                <QuickActionIcon>🔔</QuickActionIcon>
+                <QuickActionText>Avisos</QuickActionText>
+              </QuickActionButton>
+            </View>
           </QuickActionsContainer>
 
           {/* Secciones principales */}
@@ -227,10 +241,10 @@ const ProfesionalHomeScreen = ({ navigation }) => {
             </SectionDescription>
           </SectionContainer>
 
-          {/* Botón de navegación principal */}
+          {/* Botón de contacto y ayuda */}
           <SectionContainer>
-            <PrimaryButton onPress={() => Alert.alert('Próximamente', 'Centro de recursos profesionales será implementado')}>
-              <PrimaryButtonText>Centro de Recursos Profesionales</PrimaryButtonText>
+            <PrimaryButton onPress={() => navigation.navigate('Contacto')}>
+              <PrimaryButtonText>Contacto y Ayuda</PrimaryButtonText>
             </PrimaryButton>
           </SectionContainer>
         </ContentContainer>

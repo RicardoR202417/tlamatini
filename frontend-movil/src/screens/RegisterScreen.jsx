@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { StatusBar, Alert, ActivityIndicator, Text, View, TouchableOpacity } from 'react-native';
+import { StatusBar, Alert, ActivityIndicator, Text, View, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import ApiService from '../api/ApiService';
 import StorageService from '../services/StorageService';
 import SuccessModal from '../components/SuccessModal';
@@ -41,6 +42,8 @@ const RegisterScreen = ({ navigation }) => {
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [userType, setUserType] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Validación de campos
   const validateForm = () => {
@@ -175,10 +178,15 @@ const RegisterScreen = ({ navigation }) => {
   }
 
   return (
-    <FormContainer contentContainerStyle={{ flexGrow: 1 }}>
-      <StatusBar style="dark" />
-      
-      <ContentContainer>
+    <KeyboardAvoidingView 
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+    >
+      <FormContainer contentContainerStyle={{ flexGrow: 1 }}>
+        <StatusBar style="dark" />
+        
+        <ContentContainer>
         <HeaderContainer>
           <SmallLogo
             source={require('../../assets/logo_blanco.jpg')}
@@ -222,23 +230,61 @@ const RegisterScreen = ({ navigation }) => {
 
         <InputContainer>
           <InputLabel>Contraseña</InputLabel>
-          <TextInput
-            placeholder="Mínimo 8 caracteres"
-            value={formData.contraseña}
-            onChangeText={(value) => updateField('contraseña', value)}
-            secureTextEntry
-          />
+          <View style={{ position: 'relative' }}>
+            <TextInput
+              placeholder="Mínimo 8 caracteres"
+              value={formData.contraseña}
+              onChangeText={(value) => updateField('contraseña', value)}
+              secureTextEntry={!showPassword}
+              style={{ paddingRight: 50 }}
+            />
+            <TouchableOpacity
+              style={{
+                position: 'absolute',
+                right: 15,
+                top: '50%',
+                transform: [{ translateY: -12 }],
+                zIndex: 1
+              }}
+              onPress={() => setShowPassword(!showPassword)}
+            >
+              <Ionicons 
+                name={showPassword ? 'eye-off' : 'eye'} 
+                size={24} 
+                color="#666" 
+              />
+            </TouchableOpacity>
+          </View>
           {errors.contraseña && <ErrorMessage>{errors.contraseña}</ErrorMessage>}
         </InputContainer>
 
         <InputContainer>
           <InputLabel>Confirmar Contraseña</InputLabel>
-          <TextInput
-            placeholder="Repite tu contraseña"
-            value={formData.confirmarContraseña}
-            onChangeText={(value) => updateField('confirmarContraseña', value)}
-            secureTextEntry
-          />
+          <View style={{ position: 'relative' }}>
+            <TextInput
+              placeholder="Repite tu contraseña"
+              value={formData.confirmarContraseña}
+              onChangeText={(value) => updateField('confirmarContraseña', value)}
+              secureTextEntry={!showConfirmPassword}
+              style={{ paddingRight: 50 }}
+            />
+            <TouchableOpacity
+              style={{
+                position: 'absolute',
+                right: 15,
+                top: '50%',
+                transform: [{ translateY: -12 }],
+                zIndex: 1
+              }}
+              onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+            >
+              <Ionicons 
+                name={showConfirmPassword ? 'eye-off' : 'eye'} 
+                size={24} 
+                color="#666" 
+              />
+            </TouchableOpacity>
+          </View>
           {errors.confirmarContraseña && <ErrorMessage>{errors.confirmarContraseña}</ErrorMessage>}
         </InputContainer>
 
@@ -410,7 +456,8 @@ const RegisterScreen = ({ navigation }) => {
         buttonText="Intentar de nuevo"
         onPress={handleErrorModalPress}
       />
-    </FormContainer>
+      </FormContainer>
+    </KeyboardAvoidingView>
   );
 };
 

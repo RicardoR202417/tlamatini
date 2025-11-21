@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 // src/screens/MisCitasScreen.jsx
 import React, { useState, useEffect, useMemo } from 'react';
 import { StatusBar, Alert, ActivityIndicator } from 'react-native';
@@ -6,13 +7,15 @@ import styled from 'styled-components/native';
 import ApiService from '../api/ApiService';
 import StorageService from '../services/StorageService';
 
+=======
+import React, { useState, useEffect } from 'react';
+import { StatusBar, Alert } from 'react-native';
+import StandardHeader from '../components/StandardHeader';
+>>>>>>> 948f9c500233500c81fd37398de74f76150664ba
 import {
   Container,
   ScrollContainer,
   ContentContainer,
-  HeaderContainer,
-  WelcomeText,
-  SubtitleText,
   SectionContainer,
   SectionTitle,
   SectionDescription,
@@ -329,6 +332,7 @@ const MisCitasScreen = ({ navigation, route }) => {
   }
 
   return (
+<<<<<<< HEAD
     <Container>
       <StatusBar backgroundColor="#059669" barStyle="light-content" />
 
@@ -337,14 +341,18 @@ const MisCitasScreen = ({ navigation, route }) => {
         <BackIcon>←</BackIcon>
       </BackButton>
 
+=======
+    <Container>      
+>>>>>>> 948f9c500233500c81fd37398de74f76150664ba
       <ScrollContainer showsVerticalScrollIndicator={false}>
-        {/* Header */}
-        <HeaderContainer style={{ backgroundColor: '#059669' }}>
-          <WelcomeText>Mis Citas</WelcomeText>
-          <SubtitleText>
-            Gestiona y revisa todas tus citas médicas y de servicios profesionales.
-          </SubtitleText>
-        </HeaderContainer>
+        {/* Header estándar con botón de regreso */}
+        <StandardHeader
+          backgroundColor="#059669"
+          title="Mis Citas"
+          description="Gestiona y revisa todas tus citas médicas y de servicios profesionales."
+          showBackButton={true}
+          onBackPress={goBack}
+        />
 
         <ContentContainer>
           {/* Filtros */}

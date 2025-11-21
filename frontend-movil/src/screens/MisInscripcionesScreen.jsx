@@ -1,26 +1,134 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { View, Text, ActivityIndicator, Alert, TouchableOpacity, FlatList } from 'react-native';
+import { View, Text, ActivityIndicator, Alert, TouchableOpacity, FlatList, StatusBar } from 'react-native';
 import styled from 'styled-components/native';
 import { UserContext } from '../context/UserContext';
 import { obtenerInscripcionesUsuario, obtenerActividadPorId } from '../services/actividadesService';
+import StandardHeader from '../components/StandardHeader';
+import {
+  Container,
+  ScrollContainer,
+  ContentContainer,
+  SectionContainer,
+  SectionTitle,
+  SectionDescription,
+  ServiceCard,
+  ServiceIcon,
+  ServiceTitle,
+  ServiceDescription,
+  PrimaryButton,
+  PrimaryButtonText
+} from '../styles/BeneficiarioHome.styles';
 
-const Container = styled.SafeAreaView`flex:1;background:#fff;`;
-const Header = styled.View`padding:16px;background:#2563eb;`;
-const Title = styled.Text`color:#fff;font-size:20px;font-weight:bold;`;
-const DashboardButton = styled.TouchableOpacity`
-  margin-top:10px;
-  background: #fff;
-  padding: 8px 12px;
-  border-radius: 8px;
-  align-self: flex-start;
+// Estilos específicos para inscripciones
+const InscripcionCard = styled.TouchableOpacity`
+  background-color: white;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 16px;
+  margin-horizontal: 20px;
+  shadow-color: #2563eb;
+  shadow-offset: 0px 4px;
+  shadow-opacity: 0.1;
+  shadow-radius: 8px;
+  elevation: 6;
+  border-left-width: 4px;
+  border-left-color: #2563eb;
 `;
-const DashboardButtonText = styled.Text`
-  color: #2563eb;
+
+const InscripcionTitle = styled.Text`
+  font-size: 18px;
+  font-weight: bold;
+  color: #2d3748;
+  margin-bottom: 8px;
+  line-height: 24px;
+`;
+
+const InscripcionStatus = styled.View`
+  flex-direction: row;
+  align-items: center;
+  margin-bottom: 6px;
+`;
+
+const StatusBadge = styled.View`
+  background-color: ${
+    props => {
+      switch(props.status?.toLowerCase()) {
+        case 'activa': return '#22c55e';
+        case 'pendiente': return '#f59e0b';
+        case 'cancelada': return '#ef4444';
+        case 'completada': return '#3b82f6';
+        default: return '#6b7280';
+      }
+    }
+  };
+  padding: 4px 10px;
+  border-radius: 12px;
+  margin-right: 10px;
+`;
+
+const StatusText = styled.Text`
+  color: white;
+  font-size: 12px;
   font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 `;
-const Item = styled.TouchableOpacity`padding:14px;border-bottom-width:1px;border-bottom-color:#eee;`;
-const ItemTitle = styled.Text`font-size:16px;font-weight:600;`;
-const ItemSub = styled.Text`font-size:14px;color:#666;margin-top:6px;`;
+
+const InscripcionDate = styled.Text`
+  font-size: 14px;
+  color: #6b7280;
+  font-weight: 500;
+`;
+
+const InscripcionDescription = styled.Text`
+  font-size: 14px;
+  color: #4a5568;
+  margin-top: 8px;
+  line-height: 20px;
+`;
+
+const EmptyContainer = styled.View`
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
+`;
+
+const EmptyIcon = styled.Text`
+  font-size: 64px;
+  margin-bottom: 20px;
+  opacity: 0.5;
+`;
+
+const EmptyTitle = styled.Text`
+  font-size: 24px;
+  font-weight: bold;
+  color: #2d3748;
+  text-align: center;
+  margin-bottom: 12px;
+`;
+
+const EmptyMessage = styled.Text`
+  font-size: 16px;
+  color: #6b7280;
+  text-align: center;
+  line-height: 24px;
+  margin-bottom: 24px;
+`;
+
+const LoadingContainer = styled.View`
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  background-color: #f9fafb;
+`;
+
+const LoadingText = styled.Text`
+  margin-top: 16px;
+  font-size: 16px;
+  color: #6b7280;
+  font-weight: 500;
+`;
 
 const MisInscripcionesScreen = ({ navigation }) => {
   const { user, token } = useContext(UserContext);
@@ -61,30 +169,76 @@ const MisInscripcionesScreen = ({ navigation }) => {
     }
   };
 
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('es-ES', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const renderInscripcionItem = ({ item }) => (
+    <InscripcionCard onPress={() => openActividad(item.id_actividad)}>
+      <InscripcionTitle>{item.nombre_actividad}</InscripcionTitle>
+      
+      <InscripcionStatus>
+        <StatusBadge status={item.estado}>
+          <StatusText>{item.estado}</StatusText>
+        </StatusBadge>
+        <InscripcionDate>Inscrito: {formatDate(item.fecha_inscripcion)}</InscripcionDate>
+      </InscripcionStatus>
+      
+      <InscripcionDescription>
+        Toca para ver más detalles de esta actividad
+      </InscripcionDescription>
+    </InscripcionCard>
+  );
+
+  const renderEmptyState = () => (
+    <EmptyContainer>
+      <EmptyIcon>📋</EmptyIcon>
+      <EmptyTitle>Aún no tienes inscripciones</EmptyTitle>
+      <EmptyMessage>
+        Explora las actividades disponibles y úníte a las que más te interesen.
+        ¡Comienza tu experiencia de aprendizaje!
+      </EmptyMessage>
+      <PrimaryButton onPress={() => navigation.navigate('BeneficiarioHome')}>
+        <PrimaryButtonText>Explorar Actividades</PrimaryButtonText>
+      </PrimaryButton>
+    </EmptyContainer>
+  );
+
   return (
     <Container>
-      <Header>
-        <Title>Mis Actividades</Title>
-        <DashboardButton onPress={() => navigation.navigate('BeneficiarioHome')}>
-          <DashboardButtonText>← Ir al Dashboard</DashboardButtonText>
-        </DashboardButton>
-      </Header>
+      <StandardHeader
+        backgroundColor="#2563eb"
+        title="Mis Actividades"
+        description="Gestiona tus inscripciones y mantente al día con tu progreso"
+        showBackButton={true}
+        onBackPress={() => navigation.goBack()}
+      />
 
       {loading ? (
-        <View style={{flex:1,justifyContent:'center',alignItems:'center'}}>
+        <LoadingContainer>
           <ActivityIndicator size="large" color="#2563eb" />
-        </View>
+          <LoadingText>Cargando tus actividades...</LoadingText>
+        </LoadingContainer>
       ) : (
         <FlatList
           data={inscripciones}
-          keyExtractor={(i) => String(i.id_inscripcion)}
-          renderItem={({item}) => (
-            <Item onPress={() => openActividad(item.id_actividad)}>
-              <ItemTitle>{item.nombre_actividad}</ItemTitle>
-              <ItemSub>{item.estado} • {new Date(item.fecha_inscripcion).toLocaleString()}</ItemSub>
-            </Item>
-          )}
-          ListEmptyComponent={<View style={{padding:20}}><Text>No tienes inscripciones aún.</Text></View>}
+          keyExtractor={(item) => String(item.id_inscripcion)}
+          renderItem={renderInscripcionItem}
+          ListEmptyComponent={renderEmptyState}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{
+            flexGrow: 1,
+            paddingTop: 20,
+            paddingBottom: 40
+          }}
+          style={{ backgroundColor: '#f9fafb' }}
         />
       )}
     </Container>

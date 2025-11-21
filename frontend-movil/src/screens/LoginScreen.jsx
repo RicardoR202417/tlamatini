@@ -1,6 +1,7 @@
 // src/screens/LoginScreen.jsx
 import React, { useEffect, useState } from 'react';
-import { StatusBar, Alert, ActivityIndicator } from 'react-native';
+import { StatusBar, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, TouchableOpacity, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
 import * as AuthSession from 'expo-auth-session';
@@ -47,6 +48,7 @@ const LoginScreen = ({ navigation }) => {
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [userType, setUserType] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   // Web Client ID desde .env del frontend
   const clientId = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID?.trim();
@@ -164,9 +166,14 @@ const LoginScreen = ({ navigation }) => {
   }
 
   return (
-    <FormContainer contentContainerStyle={{ flexGrow: 1 }}>
-      <StatusBar style="dark" />
-      <ContentContainer>
+    <KeyboardAvoidingView 
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+    >
+      <FormContainer contentContainerStyle={{ flexGrow: 1 }}>
+        <StatusBar style="dark" />
+        <ContentContainer>
         <HeaderContainer>
           <SmallLogo source={require('../../assets/logo_blanco.jpg')} resizeMode="contain" />
           <FormTitle>Iniciar Sesión</FormTitle>
@@ -187,12 +194,31 @@ const LoginScreen = ({ navigation }) => {
 
         <InputContainer>
           <InputLabel>Contraseña</InputLabel>
-          <TextInput
-            placeholder="Tu contraseña"
-            value={formData.contraseña}
-            onChangeText={(v) => updateField('contraseña', v)}
-            secureTextEntry
-          />
+          <View style={{ position: 'relative' }}>
+            <TextInput
+              placeholder="Tu contraseña"
+              value={formData.contraseña}
+              onChangeText={(v) => updateField('contraseña', v)}
+              secureTextEntry={!showPassword}
+              style={{ paddingRight: 50 }}
+            />
+            <TouchableOpacity
+              style={{
+                position: 'absolute',
+                right: 15,
+                top: '50%',
+                transform: [{ translateY: -12 }],
+                zIndex: 1
+              }}
+              onPress={() => setShowPassword(!showPassword)}
+            >
+              <Ionicons 
+                name={showPassword ? 'eye-off' : 'eye'} 
+                size={24} 
+                color="#666" 
+              />
+            </TouchableOpacity>
+          </View>
           {errors.contraseña && <ErrorMessage>{errors.contraseña}</ErrorMessage>}
         </InputContainer>
 
@@ -230,7 +256,8 @@ const LoginScreen = ({ navigation }) => {
         buttonText="Intentar de nuevo"
         onPress={handleErrorModalPress}
       />
-    </FormContainer>
+      </FormContainer>
+    </KeyboardAvoidingView>
   );
 };
 

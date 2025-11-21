@@ -1,5 +1,6 @@
 import React from 'react';
 import { StatusBar, TouchableOpacity } from 'react-native';
+import StandardHeader from '../components/StandardHeader';
 import {
   Container,
   ScrollContainer,
@@ -108,27 +109,17 @@ const DonacionesScreen = ({ navigation }) => {
     }
   };
 
-  const goBack = () => {
-    navigation.goBack();
-  };
-
   return (
     <Container>
-      <StatusBar backgroundColor="#3EAB37" barStyle="light-content" />
-      
-      {/* Botón de regreso */}
-      <BackButton onPress={goBack}>
-        <BackIcon>←</BackIcon>
-      </BackButton>
-      
       <ScrollContainer showsVerticalScrollIndicator={false}>
-        {/* Header */}
-        <HeaderContainer style={{ backgroundColor: '#3EAB37' }}>
-          <WelcomeText>Apóyanos / Donaciones</WelcomeText>
-          <SubtitleText>
-            Tu generosidad hace la diferencia. Conoce las diferentes formas en que puedes contribuir.
-          </SubtitleText>
-        </HeaderContainer>
+        <StandardHeader
+          backgroundColor="#dc2626"
+          title="Apóyanos / Donaciones"
+          subtitle="Plataforma de Contribución Social"
+          description="Tu generosidad hace la diferencia. Conoce las diferentes formas en que puedes contribuir."
+          showBackButton={true}
+          onBackPress={() => navigation.goBack()}
+        />
 
         <ContentContainer>
           {/* Información importante */}
@@ -192,41 +183,6 @@ const DonacionesScreen = ({ navigation }) => {
               )}
             </DonationCard>
           ))}
-
-          <Divider />
-
-          {/* Botones de acción */}
-          <SectionContainer>
-            <PrimaryButton 
-              onPress={() => navigation.navigate('SelectorTipoDonacion')}
-              style={{ backgroundColor: '#3EAB37' }}
-            >
-              <PrimaryButtonText>Hacer Donación Ahora</PrimaryButtonText>
-            </PrimaryButton>
-            
-            <SecondaryButton 
-              onPress={() => navigation.navigate('MisDonaciones')}
-              style={{ borderColor: '#3EAB37' }}
-            >
-              <SecondaryButtonText style={{ color: '#3EAB37' }}>
-                Ver Mis Donaciones
-              </SecondaryButtonText>
-            </SecondaryButton>
-          </SectionContainer>
-
-          {/* Información de contacto */}
-          <SectionContainer>
-            <SectionTitle>¿Necesitas Ayuda?</SectionTitle>
-            <SectionDescription>
-              Si tienes dudas sobre el proceso de donación o necesitas más información, 
-              no dudes en contactarnos:
-            </SectionDescription>
-            <SectionDescription style={{ fontWeight: 'bold', color: '#dc2626' }}>
-              📞 Tel: (123) 456-7890{'\n'}
-              📧 Email: donaciones@tlamatini.org{'\n'}
-              🕒 Horario: Lun-Vie 9:00 AM - 6:00 PM
-            </SectionDescription>
-          </SectionContainer>
         </ContentContainer>
       </ScrollContainer>
     </Container>

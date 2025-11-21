@@ -74,13 +74,21 @@ export default function App() {
           <Stack.Screen
             name="BeneficiarioHome"
             component={BeneficiarioHomeScreen}
-            options={{ title: 'Inicio - Beneficiario', headerShown: false }}
+            options={{ 
+              title: 'Inicio - Beneficiario', 
+              headerShown: false,
+              gestureEnabled: false 
+            }}
           />
 
           <Stack.Screen
             name="ProfesionalHome"
             component={ProfesionalHomeScreen}
-            options={{ title: 'Inicio - Profesional', headerShown: false }}
+            options={{ 
+              title: 'Inicio - Profesional', 
+              headerShown: false,
+              gestureEnabled: false 
+            }}
           />
 
           <Stack.Screen

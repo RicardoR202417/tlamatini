@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { StatusBar, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import { StatusBar, TouchableOpacity, ActivityIndicator, Alert, RefreshControl } from 'react-native';
+import StandardHeader from '../components/StandardHeader';
 import {
   Container,
   ScrollContainer,
@@ -24,35 +25,94 @@ import styled from 'styled-components/native';
 import { obtenerActividades } from '../services/actividadesService';
 import { UserContext } from '../context/UserContext';
 
-// Estilos específicos para esta pantalla
-const BackButton = styled.TouchableOpacity`
-  position: absolute;
-  top: 50px;
-  left: 20px;
-  background-color: rgba(255, 255, 255, 0.95);
-  border-radius: 25px;
-  width: 50px;
-  height: 50px;
-  justify-content: center;
-  align-items: center;
-  shadow-color: #000;
-  shadow-offset: 0px 2px;
-  shadow-opacity: 0.2;
-  shadow-radius: 4px;
-  elevation: 10;
-  z-index: 1000;
+// Estilos personalizados para tarjetas mejoradas
+const StyledActivityCard = styled.TouchableOpacity`
+  background-color: white;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 16px;
+  shadow-color: #2563eb;
+  shadow-offset: 0px 4px;
+  shadow-opacity: 0.12;
+  shadow-radius: 8px;
+  elevation: 8;
+  border-left-width: 4px;
+  border-left-color: #2563eb;
+  flex-direction: row;
+  align-items: flex-start;
 `;
 
-const BackIcon = styled.Text`
-  font-size: 24px;
-  color: #2563eb;
+const ActivityIconContainer = styled.View`
+  background-color: #eff6ff;
+  border-radius: 50px;
+  width: 60px;
+  height: 60px;
+  justify-content: center;
+  align-items: center;
+  margin-right: 16px;
+`;
+
+const ActivityIconText = styled.Text`
+  font-size: 28px;
+`;
+
+const ActivityContent = styled.View`
+  flex: 1;
+  padding-left: 8px;
+`;
+
+const ActivityTitleText = styled.Text`
+  font-size: 18px;
   font-weight: bold;
+  color: #1f2937;
+  margin-bottom: 6px;
+`;
+
+const ActivityDescriptionText = styled.Text`
+  font-size: 14px;
+  color: #6b7280;
+  line-height: 20px;
+  margin-bottom: 8px;
+`;
+
+const ActivityMetaContainer = styled.View`
+  margin-top: 8px;
+`;
+
+const ActivityMeta = styled.Text`
+  font-size: 13px;
+  color: #4b5563;
+  margin-bottom: 4px;
+  font-weight: 500;
+`;
+
+const ActivityLocation = styled.Text`
+  font-size: 13px;
+  color: #2563eb;
+  font-weight: 600;
+  margin-bottom: 8px;
+`;
+
+const ActivityBadge = styled.View`
+  background-color: #dcfce7;
+  border-radius: 12px;
+  padding: 6px 12px;
+  align-self: flex-start;
+`;
+
+const ActivityBadgeText = styled.Text`
+  font-size: 12px;
+  color: #059669;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 `;
 
 const ActividadesSocialesScreen = ({ navigation }) => {
   const { user, token } = useContext(UserContext);
   const [actividades, setActividades] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
   const [isMock, setIsMock] = useState(false);
 
@@ -77,32 +137,38 @@ const ActividadesSocialesScreen = ({ navigation }) => {
     }
   };
 
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await cargarActividades();
+    setRefreshing(false);
+  };
+
   const handleActividadPress = (actividad) => {
     // Navegar a la pantalla de detalles
     navigation.navigate('DetalleActividad', { actividad });
   };
 
-  const goBack = () => {
-    navigation.goBack();
-  };
-
   return (
     <Container>
-      <StatusBar backgroundColor="#2563eb" barStyle="light-content" />
-      
-      {/* Botón de regreso */}
-      <BackButton onPress={goBack}>
-        <BackIcon>←</BackIcon>
-      </BackButton>
-      
-      <ScrollContainer showsVerticalScrollIndicator={false}>
-        {/* Header */}
-        <HeaderContainer style={{ backgroundColor: '#2563eb' }}>
-          <WelcomeText>Actividades y Programas</WelcomeText>
-          <SubtitleText>
-            Únete a nuestras actividades comunitarias y programas sociales diseñados para tu bienestar.
-          </SubtitleText>
-        </HeaderContainer>
+      <ScrollContainer 
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={['#2563eb']}
+            tintColor="#2563eb"
+          />
+        }
+      >
+        <StandardHeader
+          backgroundColor="#2563eb"
+          title="Actividades y Programas"
+          subtitle="Programas Sociales Comunitarios"
+          description="Únete a nuestras actividades comunitarias y programas sociales diseñados para tu bienestar."
+          showBackButton={true}
+          onBackPress={() => navigation.goBack()}
+        />
 
         <ContentContainer>
           {/* Información general */}
@@ -163,33 +229,38 @@ const ActividadesSocialesScreen = ({ navigation }) => {
               });
 
               return (
-                <ActivityCard 
+                <StyledActivityCard 
                   key={actividad.id_actividad} 
                   onPress={() => handleActividadPress(actividad)}
-                  style={{ marginBottom: 15 }}
                 >
-                  <ActivityIcon>{icon}</ActivityIcon>
-                  <ActivityInfo>
-                    <ActivityTitle>{actividad.titulo}</ActivityTitle>
-                    <ActivityDescription>{actividad.descripcion}</ActivityDescription>
-                    {actividad.horario_inicio && (
-                      <ActivityDescription style={{ fontWeight: 'bold', marginTop: 5 }}>
-                        📅 {fechaFormato} - {actividad.horario_inicio}
-                      </ActivityDescription>
-                    )}
-                    {actividad.ubicacion && (
-                      <ActivityDescription style={{ color: '#2563eb' }}>
-                        📍 {actividad.ubicacion}
-                      </ActivityDescription>
-                    )}
-                    <StatusIndicator 
-                      color="#2563eb"
-                      style={{ marginTop: 8 }}
-                    >
-                      <StatusText>Inscripción Abierta</StatusText>
-                    </StatusIndicator>
-                  </ActivityInfo>
-                </ActivityCard>
+                  <ActivityIconContainer>
+                    <ActivityIconText>{icon}</ActivityIconText>
+                  </ActivityIconContainer>
+                  
+                  <ActivityContent>
+                    <ActivityTitleText>{actividad.titulo}</ActivityTitleText>
+                    <ActivityDescriptionText numberOfLines={2}>
+                      {actividad.descripcion}
+                    </ActivityDescriptionText>
+                    
+                    <ActivityMetaContainer>
+                      {actividad.horario_inicio && (
+                        <ActivityMeta>
+                          📅 {fechaFormato} - {actividad.horario_inicio}
+                        </ActivityMeta>
+                      )}
+                      {actividad.ubicacion && (
+                        <ActivityLocation>
+                          📍 {actividad.ubicacion}
+                        </ActivityLocation>
+                      )}
+                      
+                      <ActivityBadge>
+                        <ActivityBadgeText>Inscripción Abierta</ActivityBadgeText>
+                      </ActivityBadge>
+                    </ActivityMetaContainer>
+                  </ActivityContent>
+                </StyledActivityCard>
               );
             })
           ) : !loading && actividades && actividades.length === 0 ? (
@@ -199,18 +270,6 @@ const ActividadesSocialesScreen = ({ navigation }) => {
               </ActivityDescription>
             </SectionContainer>
           ) : null}
-
-          {/* Botón de acción */}
-          {!loading && (
-            <SectionContainer>
-              <PrimaryButton 
-                onPress={cargarActividades}
-                style={{ backgroundColor: '#2563eb' }}
-              >
-                <PrimaryButtonText>Actualizar</PrimaryButtonText>
-              </PrimaryButton>
-            </SectionContainer>
-          )}
         </ContentContainer>
       </ScrollContainer>
     </Container>

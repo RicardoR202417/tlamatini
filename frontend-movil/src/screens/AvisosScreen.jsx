@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StatusBar, Alert } from 'react-native';
+import { StatusBar, Alert, View } from 'react-native';
 import {
   Container,
   ScrollContainer,
@@ -19,32 +19,10 @@ import {
   StatusIndicator,
   StatusText
 } from '../styles/BeneficiarioHome.styles';
+import StandardHeader from '../components/StandardHeader';
 import styled from 'styled-components/native';
 
 // Estilos específicos para esta pantalla
-const BackButton = styled.TouchableOpacity`
-  position: absolute;
-  top: 50px;
-  left: 20px;
-  background-color: rgba(255, 255, 255, 0.95);
-  border-radius: 25px;
-  width: 50px;
-  height: 50px;
-  justify-content: center;
-  align-items: center;
-  shadow-color: #000;
-  shadow-offset: 0px 2px;
-  shadow-opacity: 0.2;
-  shadow-radius: 4px;
-  elevation: 10;
-  z-index: 1000;
-`;
-
-const BackIcon = styled.Text`
-  font-size: 24px;
-  color: #7c3aed;
-  font-weight: bold;
-`;
 
 const NotificationCard = styled.TouchableOpacity`
   background-color: white;
@@ -147,9 +125,47 @@ const EmptyStateDescription = styled.Text`
   line-height: 24px;
 `;
 
+const FilterContainer = styled.View`
+  flex-direction: row;
+  padding: 16px 20px;
+  background-color: white;
+  border-bottom-width: 1px;
+  border-bottom-color: #e5e7eb;
+  margin-bottom: 16px;
+`;
+
+const FilterButton = styled.TouchableOpacity`
+  padding: 8px 16px;
+  border-radius: 20px;
+  margin-right: 12px;
+  background-color: ${props => props.active ? '#7c3aed' : '#f3f4f6'};
+  border: 1px solid ${props => props.active ? '#7c3aed' : '#d1d5db'};
+`;
+
+const FilterText = styled.Text`
+  font-size: 14px;
+  font-weight: 600;
+  color: ${props => props.active ? 'white' : '#6b7280'};
+`;
+
+const FilterRow = styled.View`
+  flex-direction: row;
+  margin-bottom: 12px;
+`;
+
+const FilterLabel = styled.Text`
+  font-size: 16px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 8px;
+  margin-left: 4px;
+`;
+
 const AvisosScreen = ({ navigation }) => {
   const [notificaciones, setNotificaciones] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [filtroActivo, setFiltroActivo] = useState('todas');
+  const [categoriaFiltro, setCategoriaFiltro] = useState('todas');
 
   // Datos de ejemplo de notificaciones (en futuro vendrán del backend)
   const notificacionesEjemplo = [
@@ -215,6 +231,23 @@ const AvisosScreen = ({ navigation }) => {
     setLoading(false);
   };
 
+  const notificacionesFiltradas = notificaciones.filter(notif => {
+    // Filtro por estado de lectura
+    if (filtroActivo === 'no_leidas' && notif.leido) return false;
+    if (filtroActivo === 'leidas' && !notif.leido) return false;
+    
+    // Filtro por categoría
+    if (categoriaFiltro !== 'todas' && notif.categoria !== categoriaFiltro) return false;
+    
+    return true;
+  });
+
+  const contadores = {
+    todas: notificaciones.length,
+    no_leidas: notificaciones.filter(n => !n.leido).length,
+    leidas: notificaciones.filter(n => n.leido).length
+  };
+
   const formatTime = (fechaString) => {
     const fecha = new Date(fechaString);
     const ahora = new Date();
@@ -274,52 +307,83 @@ const AvisosScreen = ({ navigation }) => {
     Alert.alert('Éxito', 'Todas las notificaciones han sido marcadas como leídas');
   };
 
-  const goBack = () => {
-    navigation.goBack();
-  };
-
   const unreadCount = notificaciones.filter(n => !n.leido).length;
 
   return (
     <Container>
-      <StatusBar backgroundColor="#7c3aed" barStyle="light-content" />
-      
-      {/* Botón de regreso */}
-      <BackButton onPress={goBack}>
-        <BackIcon>←</BackIcon>
-      </BackButton>
-      
       <ScrollContainer showsVerticalScrollIndicator={false}>
-        {/* Header */}
-        <HeaderContainer style={{ backgroundColor: '#7c3aed' }}>
-          <WelcomeText>Avisos y Notificaciones</WelcomeText>
-          <SubtitleText>
-            Mantente al día con todas las actualizaciones importantes de TLAMATINI.
-          </SubtitleText>
-        </HeaderContainer>
+        <StandardHeader
+          backgroundColor="#7c3aed"
+          title="Avisos y Notificaciones"
+          description="Gestiona y revisa tus avisos y notificaciones de TLAMATINI."
+          showBackButton={true}
+          onBackPress={() => navigation.goBack()}
+        />
 
         <ContentContainer>
-          {/* Estadísticas de notificaciones */}
-          <SectionContainer>
-            <SectionTitle>
-              Centro de Notificaciones
-              {unreadCount > 0 && ` (${unreadCount} sin leer)`}
-            </SectionTitle>
-            
-            {unreadCount > 0 && (
-              <PrimaryButton 
-                onPress={markAllAsRead}
-                style={{ backgroundColor: '#7c3aed', marginBottom: 16 }}
-              >
-                <PrimaryButtonText>Marcar Todo como Leído</PrimaryButtonText>
-              </PrimaryButton>
-            )}
-          </SectionContainer>
+          {/* Filtros de notificaciones */}
+          <FilterContainer>
+            <View style={{ flex: 1 }}>
+              <FilterLabel>Filtrar por estado:</FilterLabel>
+              <FilterRow>
+                <FilterButton 
+                  active={filtroActivo === 'todas'}
+                  onPress={() => setFiltroActivo('todas')}
+                >
+                  <FilterText active={filtroActivo === 'todas'}>
+                    Todas ({contadores.todas})
+                  </FilterText>
+                </FilterButton>
+                
+                <FilterButton 
+                  active={filtroActivo === 'no_leidas'}
+                  onPress={() => setFiltroActivo('no_leidas')}
+                >
+                  <FilterText active={filtroActivo === 'no_leidas'}>
+                    No leídas ({contadores.no_leidas})
+                  </FilterText>
+                </FilterButton>
+                
+                <FilterButton 
+                  active={filtroActivo === 'leidas'}
+                  onPress={() => setFiltroActivo('leidas')}
+                >
+                  <FilterText active={filtroActivo === 'leidas'}>
+                    Leídas ({contadores.leidas})
+                  </FilterText>
+                </FilterButton>
+              </FilterRow>
+              
+              <FilterLabel>Filtrar por categoría:</FilterLabel>
+              <FilterRow>
+                <FilterButton 
+                  active={categoriaFiltro === 'todas'}
+                  onPress={() => setCategoriaFiltro('todas')}
+                >
+                  <FilterText active={categoriaFiltro === 'todas'}>Todas</FilterText>
+                </FilterButton>
+                
+                <FilterButton 
+                  active={categoriaFiltro === 'citas'}
+                  onPress={() => setCategoriaFiltro('citas')}
+                >
+                  <FilterText active={categoriaFiltro === 'citas'}>Citas</FilterText>
+                </FilterButton>
+                
+                <FilterButton 
+                  active={categoriaFiltro === 'actividades'}
+                  onPress={() => setCategoriaFiltro('actividades')}
+                >
+                  <FilterText active={categoriaFiltro === 'actividades'}>Actividades</FilterText>
+                </FilterButton>
+              </FilterRow>
+            </View>
+          </FilterContainer>
 
           {/* Lista de notificaciones */}
-          {notificaciones.length > 0 ? (
+          {notificacionesFiltradas.length > 0 ? (
             <SectionContainer>
-              {notificaciones.map((notificacion) => (
+              {notificacionesFiltradas.map((notificacion) => (
                 <NotificationCard
                   key={notificacion.id}
                   onPress={() => handleNotificationPress(notificacion)}
@@ -359,21 +423,9 @@ const AvisosScreen = ({ navigation }) => {
             </EmptyStateCard>
           )}
 
-          {/* Configuración de notificaciones */}
-          <SectionContainer>
-            <SectionTitle>Configuración</SectionTitle>
-            
-            <ServiceCard onPress={() => Alert.alert('Próximamente', 'Configuración de notificaciones')}>
-              <ServiceIcon>⚙️</ServiceIcon>
-              <ServiceTitle>Preferencias de Notificaciones</ServiceTitle>
-              <ServiceDescription>Configura qué tipos de avisos deseas recibir</ServiceDescription>
-            </ServiceCard>
-          </SectionContainer>
-
           {/* Información adicional */}
           <SectionContainer>
             <SectionDescription style={{ textAlign: 'center', fontStyle: 'italic' }}>
-              💡 Las notificaciones importantes también se envían por correo electrónico.
               {'\n'}Revisa tu bandeja de entrada regularmente.
             </SectionDescription>
           </SectionContainer>
