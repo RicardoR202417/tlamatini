@@ -232,9 +232,6 @@ const LoginScreen = ({ navigation }) => {
           <PrimaryButton onPress={handleLogin}>
             <PrimaryButtonText>Iniciar Sesión</PrimaryButtonText>
           </PrimaryButton>
-          <GoogleButton onPress={handleGoogleLogin}>
-            <GoogleButtonText>Continuar con Google</GoogleButtonText>
-          </GoogleButton>
         </ButtonContainer>
 
         <LinkContainer>

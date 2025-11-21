@@ -1,13 +1,10 @@
 import React, { useState, useContext } from 'react';
-import { StatusBar, Alert, ActivityIndicator, Image } from 'react-native';
+import { Alert, ActivityIndicator, Image } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import {
   Container,
   ScrollContainer,
   ContentContainer,
-  HeaderContainer,
-  WelcomeText,
-  SubtitleText,
   SectionContainer,
   SectionTitle,
   SectionDescription,
@@ -19,35 +16,12 @@ import {
 } from '../styles/BeneficiarioHome.styles';
 import { UserContext } from '../context/UserContext';
 import ApiService from '../api/ApiService';
+import StandardHeader from '../components/StandardHeader';
 import SuccessModal from '../components/SuccessModal';
 import ErrorModal from '../components/ErrorModal';
 import styled from 'styled-components/native';
 
 // Estilos específicos
-const BackButton = styled.TouchableOpacity`
-  position: absolute;
-  top: 50px;
-  left: 20px;
-  background-color: rgba(255, 255, 255, 0.95);
-  border-radius: 25px;
-  width: 50px;
-  height: 50px;
-  justify-content: center;
-  align-items: center;
-  shadow-color: #000;
-  shadow-offset: 0px 2px;
-  shadow-opacity: 0.2;
-  shadow-radius: 4px;
-  elevation: 10;
-  z-index: 1000;
-`;
-
-const BackIcon = styled.Text`
-  font-size: 24px;
-  color: #3EAB37;
-  font-weight: bold;
-`;
-
 const FormContainer = styled.View`
   background-color: white;
   border-radius: 16px;
@@ -370,19 +344,14 @@ const DonacionEspecieScreen = ({ navigation }) => {
 
   return (
     <Container>
-      <StatusBar backgroundColor="#3EAB37" barStyle="light-content" />
-      
-      <BackButton onPress={goBack}>
-        <BackIcon>←</BackIcon>
-      </BackButton>
-      
       <ScrollContainer showsVerticalScrollIndicator={false}>
-        <HeaderContainer style={{ backgroundColor: '#3EAB37' }}>
-          <WelcomeText>Donación en Especie</WelcomeText>
-          <SubtitleText>
-            Dona artículos físicos para ayudar a la comunidad
-          </SubtitleText>
-        </HeaderContainer>
+        <StandardHeader
+          backgroundColor="#dc2626"
+          title="Donación en Especie"
+          subtitle="Dona artículos físicos para ayudar a la comunidad"
+          showBackButton={true}
+          onBackPress={goBack}
+        />
 
         <ContentContainer>
           {/* Información importante */}

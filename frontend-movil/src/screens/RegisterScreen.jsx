@@ -427,10 +427,6 @@ const RegisterScreen = ({ navigation }) => {
           <PrimaryButton onPress={handleRegister}>
             <PrimaryButtonText>Crear Cuenta</PrimaryButtonText>
           </PrimaryButton>
-
-          <GoogleButton onPress={handleGoogleRegister}>
-            <GoogleButtonText>Registrarse con Google</GoogleButtonText>
-          </GoogleButton>
         </ButtonContainer>
 
         <LinkContainer>

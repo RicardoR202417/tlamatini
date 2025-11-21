@@ -1,52 +1,23 @@
 import React, { useState, useContext } from 'react';
-import { StatusBar, Alert, ActivityIndicator } from 'react-native';
+import { Alert, ActivityIndicator } from 'react-native';
 import {
   Container,
   ScrollContainer,
   ContentContainer,
-  HeaderContainer,
-  WelcomeText,
-  SubtitleText,
   SectionContainer,
-  SectionTitle,
   SectionDescription,
   PrimaryButton,
   PrimaryButtonText,
-  SecondaryButton,
-  SecondaryButtonText,
   Divider
 } from '../styles/BeneficiarioHome.styles';
 import { UserContext } from '../context/UserContext';
 import ApiService from '../api/ApiService';
+import StandardHeader from '../components/StandardHeader';
 import SuccessModal from '../components/SuccessModal';
 import ErrorModal from '../components/ErrorModal';
 import styled from 'styled-components/native';
 
 // Estilos específicos
-const BackButton = styled.TouchableOpacity`
-  position: absolute;
-  top: 50px;
-  left: 20px;
-  background-color: rgba(255, 255, 255, 0.95);
-  border-radius: 25px;
-  width: 50px;
-  height: 50px;
-  justify-content: center;
-  align-items: center;
-  shadow-color: #000;
-  shadow-offset: 0px 2px;
-  shadow-opacity: 0.2;
-  shadow-radius: 4px;
-  elevation: 10;
-  z-index: 1000;
-`;
-
-const BackIcon = styled.Text`
-  font-size: 24px;
-  color: #3EAB37;
-  font-weight: bold;
-`;
-
 const FormContainer = styled.View`
   background-color: white;
   border-radius: 16px;
@@ -144,25 +115,11 @@ const DonacionMonetariaScreen = ({ navigation }) => {
   const [montoSeleccionado, setMontoSeleccionado] = useState(null);
   const [montoPersonalizado, setMontoPersonalizado] = useState('');
   const [descripcion, setDescripcion] = useState('');
-  const [metodoSeleccionado, setMetodoSeleccionado] = useState(null);
   const [errors, setErrors] = useState({});
 
-  const montosRapidos = [50, 100, 250, 500, 1000];
+  const montosRapidos = [50, 100, 250, 500, 2000];
 
-  const metodosPago = [
-    {
-      id: 'paypal',
-      icon: '💳',
-      title: 'PayPal',
-      description: 'Pago seguro con PayPal'
-    },
-    {
-      id: 'mercadopago',
-      icon: '💰',
-      title: 'Mercado Pago',
-      description: 'Tarjeta de crédito/débito'
-    }
-  ];
+
 
   const validateForm = () => {
     const newErrors = {};
@@ -170,10 +127,6 @@ const DonacionMonetariaScreen = ({ navigation }) => {
     const monto = montoSeleccionado || parseFloat(montoPersonalizado);
     if (!monto || monto < 50) {
       newErrors.monto = 'El monto mínimo es $50 MXN';
-    }
-    
-    if (!metodoSeleccionado) {
-      newErrors.metodo = 'Selecciona un método de pago';
     }
 
     setErrors(newErrors);
@@ -196,12 +149,7 @@ const DonacionMonetariaScreen = ({ navigation }) => {
     }
   };
 
-  const handleMetodoSelect = (metodo) => {
-    setMetodoSeleccionado(metodo);
-    if (errors.metodo) {
-      setErrors({ ...errors, metodo: null });
-    }
-  };
+
 
   const procesarDonacion = async () => {
     if (!validateForm()) return;
@@ -210,12 +158,7 @@ const DonacionMonetariaScreen = ({ navigation }) => {
 
     try {
       setLoading(true);
-
-      if (metodoSeleccionado.id === 'paypal') {
-        await procesarConPayPal(monto);
-      } else if (metodoSeleccionado.id === 'mercadopago') {
-        await procesarConMercadoPago(monto);
-      }
+      await procesarConPayPal(monto);
     } catch (error) {
       setErrorMessage(error.message || 'Error al procesar la donación');
       setShowErrorModal(true);
@@ -271,57 +214,9 @@ const DonacionMonetariaScreen = ({ navigation }) => {
     }
   };
 
-  const procesarConMercadoPago = async (monto) => {
-    try {
-      // Crear preferencia en Mercado Pago
-      const preferenciaResponse = await ApiService.request('POST', '/api/donar/mercadopago/crear-preferencia', {
-        monto,
-        tipo: 'monetaria',
-        back_urls: {
-          success: 'tlamatini://payment/success',
-          failure: 'tlamatini://payment/failure',
-          pending: 'tlamatini://payment/pending'
-        }
-      });
 
-      // En una app real, aquí se abriría el WebView de Mercado Pago
-      Alert.alert(
-        'Mercado Pago',
-        'Se abrirá Mercado Pago para completar el pago',
-        [
-          {
-            text: 'Cancelar',
-            style: 'cancel'
-          },
-          {
-            text: 'Continuar',
-            onPress: () => simularPagoMercadoPago(monto)
-          }
-        ]
-      );
-    } catch (error) {
-      throw new Error('Error al crear preferencia de Mercado Pago: ' + error.message);
-    }
-  };
 
-  const simularPagoMercadoPago = async (monto) => {
-    try {
-      // Simular pago exitoso
-      const paymentId = `MP_${Date.now()}`;
-      const response = await ApiService.request('POST', '/api/donar/mercadopago', {
-        id_usuario: user.id_usuario,
-        monto,
-        tipo: 'monetaria',
-        descripcion,
-        payment_id: paymentId,
-        payment_status: 'approved'
-      });
 
-      setShowSuccessModal(true);
-    } catch (error) {
-      throw new Error('Error al procesar pago con Mercado Pago: ' + error.message);
-    }
-  };
 
   const handleSuccessModalPress = () => {
     setShowSuccessModal(false);
@@ -349,19 +244,14 @@ const DonacionMonetariaScreen = ({ navigation }) => {
 
   return (
     <Container>
-      <StatusBar backgroundColor="#3EAB37" barStyle="light-content" />
-      
-      <BackButton onPress={goBack}>
-        <BackIcon>←</BackIcon>
-      </BackButton>
-      
       <ScrollContainer showsVerticalScrollIndicator={false}>
-        <HeaderContainer style={{ backgroundColor: '#3EAB37' }}>
-          <WelcomeText>Donación Monetaria</WelcomeText>
-          <SubtitleText>
-            Realiza tu donación de forma rápida y segura
-          </SubtitleText>
-        </HeaderContainer>
+        <StandardHeader
+          backgroundColor="#dc2626"
+          title="Donación Monetaria"
+          subtitle="Realiza tu donación de forma rápida y segura"
+          showBackButton={true}
+          onBackPress={goBack}
+        />
 
         <ContentContainer>
           {/* Selección de monto */}
@@ -397,15 +287,6 @@ const DonacionMonetariaScreen = ({ navigation }) => {
                   </MontoText>
                 </MontoCard>
               ))}
-              <MontoCard
-                selected={!!montoPersonalizado}
-                onPress={() => {}}
-                style={{ backgroundColor: montoPersonalizado ? '#3EAB37' : '#f7fafc' }}
-              >
-                <MontoText selected={!!montoPersonalizado}>
-                  Otro
-                </MontoText>
-              </MontoCard>
             </MontoRow>
 
             <InputLabel>O ingresa tu monto personalizado:</InputLabel>
@@ -434,35 +315,25 @@ const DonacionMonetariaScreen = ({ navigation }) => {
             />
           </FormContainer>
 
-          {/* Método de pago */}
+          {/* Mensaje sobre método de pago */}
           <FormContainer>
             <InputLabel>Método de pago</InputLabel>
-            <SectionDescription style={{ marginBottom: 16 }}>
-              Selecciona cómo quieres realizar tu donación
+            <SectionDescription style={{ 
+              marginBottom: 16, 
+              backgroundColor: '#e6fffa', 
+              padding: 16, 
+              borderRadius: 12, 
+              borderLeftWidth: 4, 
+              borderLeftColor: '#3EAB37' 
+            }}>
+              💳 Tu donación será procesada de forma segura a través de PayPal. 
+              Podrás pagar con tu cuenta PayPal o cualquier tarjeta de crédito/débito.
             </SectionDescription>
-            
-            {metodosPago.map((metodo) => (
-              <PaymentCard
-                key={metodo.id}
-                selected={metodoSeleccionado?.id === metodo.id}
-                onPress={() => handleMetodoSelect(metodo)}
-              >
-                <PaymentIcon>{metodo.icon}</PaymentIcon>
-                <PaymentInfo>
-                  <PaymentTitle>{metodo.title}</PaymentTitle>
-                  <PaymentDescription>{metodo.description}</PaymentDescription>
-                </PaymentInfo>
-                {metodoSeleccionado?.id === metodo.id && (
-                  <PaymentIcon>✓</PaymentIcon>
-                )}
-              </PaymentCard>
-            ))}
-            {errors.metodo && <ErrorText>{errors.metodo}</ErrorText>}
           </FormContainer>
 
           <Divider />
 
-          {/* Botones de acción */}
+          {/* Botón de acción */}
           <SectionContainer>
             <PrimaryButton 
               onPress={procesarDonacion}
@@ -473,15 +344,6 @@ const DonacionMonetariaScreen = ({ navigation }) => {
                 Donar ${montoSeleccionado || montoPersonalizado || '0'}
               </PrimaryButtonText>
             </PrimaryButton>
-            
-            <SecondaryButton 
-              onPress={goBack}
-              style={{ borderColor: '#3EAB37' }}
-            >
-              <SecondaryButtonText style={{ color: '#3EAB37' }}>
-                Cancelar
-              </SecondaryButtonText>
-            </SecondaryButton>
           </SectionContainer>
         </ContentContainer>
       </ScrollContainer>

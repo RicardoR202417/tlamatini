@@ -1,12 +1,9 @@
-import React, { useState, useContext } from 'react';
-import { StatusBar, Alert, ActivityIndicator } from 'react-native';
+import React, { useState, useContext, useEffect } from 'react';
+import { Alert, ActivityIndicator } from 'react-native';
 import {
   Container,
   ScrollContainer,
   ContentContainer,
-  HeaderContainer,
-  WelcomeText,
-  SubtitleText,
   SectionContainer,
   SectionTitle,
   SectionDescription,
@@ -18,35 +15,13 @@ import {
 } from '../styles/BeneficiarioHome.styles';
 import { UserContext } from '../context/UserContext';
 import ApiService from '../api/ApiService';
+import StorageService from '../services/StorageService';
+import StandardHeader from '../components/StandardHeader';
 import SuccessModal from '../components/SuccessModal';
 import ErrorModal from '../components/ErrorModal';
 import styled from 'styled-components/native';
 
 // Estilos específicos (reutilizando de DonacionMonetaria)
-const BackButton = styled.TouchableOpacity`
-  position: absolute;
-  top: 50px;
-  left: 20px;
-  background-color: rgba(255, 255, 255, 0.95);
-  border-radius: 25px;
-  width: 50px;
-  height: 50px;
-  justify-content: center;
-  align-items: center;
-  shadow-color: #000;
-  shadow-offset: 0px 2px;
-  shadow-opacity: 0.2;
-  shadow-radius: 4px;
-  elevation: 10;
-  z-index: 1000;
-`;
-
-const BackIcon = styled.Text`
-  font-size: 24px;
-  color: #3EAB37;
-  font-weight: bold;
-`;
-
 const FormContainer = styled.View`
   background-color: white;
   border-radius: 16px;
@@ -119,6 +94,7 @@ const ErrorText = styled.Text`
 
 const DonacionDeducibleScreen = ({ navigation }) => {
   const { user } = useContext(UserContext);
+  const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
@@ -132,6 +108,37 @@ const DonacionDeducibleScreen = ({ navigation }) => {
   const [razonSocial, setRazonSocial] = useState('');
   const [usoCfdi, setUsoCfdi] = useState('D01'); // Honorarios médicos, dentales y hospitalarios
   const [errors, setErrors] = useState({});
+
+  // Cargar datos del perfil al montar el componente
+  useEffect(() => {
+    loadUserProfile();
+  }, []);
+
+  const loadUserProfile = async () => {
+    try {
+      const token = await StorageService.getAccessToken();
+      if (!token) {
+        Alert.alert('Error', 'Sesión expirada');
+        navigation.navigate('Login');
+        return;
+      }
+
+      // Obtener datos actualizados del servidor
+      const response = await ApiService.getProfile(token);
+      
+      if (response.user) {
+        // Actualizar el storage con los datos más recientes
+        await StorageService.saveUserData(response.user);
+        setUserData(response.user);
+      } else {
+        throw new Error('No se recibieron datos del usuario');
+      }
+    } catch (error) {
+      console.error('Error cargando perfil:', error);
+      // Usar datos del contexto como fallback
+      setUserData(user);
+    }
+  };
 
   const montosRapidos = [500, 1000, 2500, 5000, 10000];
 
@@ -241,19 +248,14 @@ const DonacionDeducibleScreen = ({ navigation }) => {
 
   return (
     <Container>
-      <StatusBar backgroundColor="#3EAB37" barStyle="light-content" />
-      
-      <BackButton onPress={goBack}>
-        <BackIcon>←</BackIcon>
-      </BackButton>
-      
       <ScrollContainer showsVerticalScrollIndicator={false}>
-        <HeaderContainer style={{ backgroundColor: '#3EAB37' }}>
-          <WelcomeText>Donación Deducible</WelcomeText>
-          <SubtitleText>
-            Donación con comprobante fiscal para deducir de impuestos
-          </SubtitleText>
-        </HeaderContainer>
+        <StandardHeader
+          backgroundColor="#dc2626"
+          title="Donación Deducible"
+          subtitle="Donación con comprobante fiscal para deducir de impuestos"
+          showBackButton={true}
+          onBackPress={goBack}
+        />
 
         <ContentContainer>
           {/* Información fiscal */}
@@ -371,6 +373,16 @@ const DonacionDeducibleScreen = ({ navigation }) => {
             />
           </FormContainer>
 
+          {/* Información sobre entrega de comprobante */}
+          <InfoCard style={{ 
+            backgroundColor: '#f0fdf4', 
+            borderColor: '#22c55e' 
+          }}>
+            <InfoText style={{ color: '#15803d' }}>
+              📧 Tu comprobante fiscal (factura oficial) será enviado al correo electrónico registrado en tu cuenta: {userData?.correo || 'Cargando...'}{'\n'}
+            </InfoText>
+          </InfoCard>
+
           {/* Descripción opcional */}
           <FormContainer>
             <InputLabel>Concepto (opcional)</InputLabel>
@@ -394,7 +406,7 @@ const DonacionDeducibleScreen = ({ navigation }) => {
               style={{ backgroundColor: '#3EAB37' }}
             >
               <PrimaryButtonText>
-                Donar ${montoSeleccionado || montoPersonalizado || '0'} y Generar Factura
+                Donar ${montoSeleccionado || montoPersonalizado || '0'}
               </PrimaryButtonText>
             </PrimaryButton>
             
